@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 class AuthService {
   Future<void> signUpWithEmail(String email, String password, String name,
-      String tel, String idline) async {
+      String tel, String idline, String category) async {
     try {
       // Create New User Account to Firebase Authen
       final credential =
@@ -21,6 +21,7 @@ class AuthService {
         "name": name,
         "tel": tel,
         "idline": idline,
+        "category": category,
       });
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {

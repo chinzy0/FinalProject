@@ -32,7 +32,7 @@ class _RegisterPageState extends State<RegisterPage> {
       ),
       body: SafeArea(
           child: Container(
-        height: 380,
+        height: 450,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
@@ -160,7 +160,7 @@ class _RegisterPageState extends State<RegisterPage> {
           if (_formKey.currentState!.validate()) {
             AuthService()
                 .signUpWithEmail(_email.text, _password.text, _name.text,
-                    _tel.text, _idline.text)
+                    _tel.text, _idline.text, _category.text)
                 .then((value) => Navigator.pop(context));
           }
         },
