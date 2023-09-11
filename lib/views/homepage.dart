@@ -89,6 +89,79 @@ class _HomepageState extends State<Homepage> {
               ],
             ),
           ),
+          Padding(
+            padding: EdgeInsets.only(left: 3, bottom: 15),
+            child: Text(
+              "Reused leftover Items",
+              style: TextStyle(
+                  fontSize: 25,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1,
+                  wordSpacing: 2,
+                  color: Colors.black),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              height: 200,
+              decoration: const BoxDecoration(
+                  image: DecorationImage(
+                      image: AssetImage("assets/images/book.jpg"),
+                      fit: BoxFit.fitWidth)),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              height: 200,
+              decoration: const BoxDecoration(
+                  image: DecorationImage(
+                      image: AssetImage("assets/images/cloth.png"),
+                      fit: BoxFit.fitWidth)),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              height: 200,
+              decoration: const BoxDecoration(
+                image: DecorationImage(
+                    image: AssetImage("assets/images/electrical.jpg"),
+                    fit: BoxFit.fitWidth),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              height: 200,
+              decoration: const BoxDecoration(
+                  image: DecorationImage(
+                      image: AssetImage("assets/images/ferniture.jpg"),
+                      fit: BoxFit.fitWidth)),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              height: 200,
+              decoration: const BoxDecoration(
+                  image: DecorationImage(
+                      image: AssetImage("assets/images/sport.jpg"),
+                      fit: BoxFit.fitWidth)),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              height: 200,
+              decoration: const BoxDecoration(
+                  image: DecorationImage(
+                      image: AssetImage("assets/images/stationery.jpg"),
+                      fit: BoxFit.fitWidth)),
+            ),
+          ),
         ],
       ),
     );
