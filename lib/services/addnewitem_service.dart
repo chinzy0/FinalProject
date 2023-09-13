@@ -1,16 +1,22 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Additem {
-  Future<void> Add(String itemname, String detail) async {
+  Future<void> AddBook(String itemname, String detail) async {
     try {
-      final collection = FirebaseFirestore.instance.collection('Items');
+      final collection = FirebaseFirestore.instance
+          .collection('Items')
+          .doc('book')
+          .collection('DataBook');
 
       await collection.doc().set({
         "itemname": itemname,
         "detail": detail,
+        "image": '',
+        "uploadtime": '',
+        "acepttime": '',
       });
 
-      print('Feedback sent successfully');
+      print('sent successfully');
     } catch (e) {
       print('Error when sending feedback');
     }

@@ -53,9 +53,12 @@ class _AddMoreNewItemState extends State<AddMoreNewItem> {
           child: SizedBox(
             child: ListView(
               children: [
+                Categoryinput(),
                 ItemNameinput(),
                 Detailinput(),
-                Categoryinput(),
+                SizedBox(
+                  height: 10,
+                ),
                 Senddata()
               ],
             ),
@@ -130,7 +133,7 @@ class _AddMoreNewItemState extends State<AddMoreNewItem> {
         onPressed: () {
           if (_formKey.currentState!.validate()) {
             Additem()
-                .Add(
+                .AddBook(
                   _itemname.text,
                   _detail.text,
                 )
