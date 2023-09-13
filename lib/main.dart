@@ -1,4 +1,5 @@
 import 'package:finalproject/views/category.dart';
+import 'package:finalproject/views/loginpage.dart';
 
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';

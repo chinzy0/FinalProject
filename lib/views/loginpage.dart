@@ -1,4 +1,5 @@
 import 'package:finalproject/services/auth_service.dart';
+import 'package:finalproject/views/category.dart';
 import 'package:finalproject/views/homepage.dart';
 import 'package:finalproject/views/registerpage.dart';
 import 'package:flutter/material.dart';
@@ -85,7 +86,8 @@ class _LoginPageState extends State<LoginPage> {
               if (value == 1) {
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => const Homepage()),
+                  MaterialPageRoute(
+                      builder: (context) => const CategoriesPage()),
                 );
               }
             });

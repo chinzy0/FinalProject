@@ -1,3 +1,5 @@
+import 'package:finalproject/services/addnewitem_service.dart';
+import 'package:finalproject/views/category.dart';
 import 'package:flutter/material.dart';
 
 class AddMoreNewItem extends StatefulWidget {
@@ -9,10 +11,18 @@ class AddMoreNewItem extends StatefulWidget {
 
 class _AddMoreNewItemState extends State<AddMoreNewItem> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
   final TextEditingController _itemname = TextEditingController();
   final TextEditingController _detail = TextEditingController();
-  final _selectedCategory = '';
+
+  List<String> dropdownItems = [
+    'Book',
+    'Cloth',
+    'Electrical',
+    'Ferniture',
+    'Sport',
+    'Stationery'
+  ];
+  String selectedValue = 'Book';
 
   @override
   Widget build(BuildContext context) {
@@ -32,22 +42,104 @@ class _AddMoreNewItemState extends State<AddMoreNewItem> {
       ),
       body: SafeArea(
           child: Container(
-        height: 450,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(10),
         ),
         margin: EdgeInsets.all(20),
-        padding: EdgeInsets.all(24),
+        padding: EdgeInsets.all(30),
         child: Form(
           key: _formKey,
           child: SizedBox(
             child: ListView(
-              children: [],
+              children: [
+                ItemNameinput(),
+                Detailinput(),
+                Categoryinput(),
+                Senddata()
+              ],
             ),
           ),
         ),
       )),
     );
+  }
+
+  Widget ItemNameinput() {
+    return TextFormField(
+      controller: _itemname,
+      keyboardType: TextInputType.text,
+      decoration: const InputDecoration(
+        icon: const Icon(Icons.person_3_rounded),
+        hintText: 'Item Name',
+        labelText: 'Item Name',
+      ),
+      validator: (value) {
+        if (value!.isEmpty) {
+          return 'กรุณากรอกข้อมูลให้ครบ';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget Detailinput() {
+    return TextFormField(
+      controller: _detail,
+      keyboardType: TextInputType.text,
+      decoration: const InputDecoration(
+        icon: const Icon(Icons.details),
+        hintText: 'Detail',
+        labelText: 'Detail',
+      ),
+      validator: (value) {
+        if (value!.isEmpty) {
+          return 'กรุณากรอกข้อมูลให้ครบ';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget Categoryinput() {
+    return DropdownButtonFormField<String>(
+      value: selectedValue,
+      onChanged: (newValue) {
+        setState(() {
+          selectedValue = newValue!;
+        });
+      },
+      items: dropdownItems.map((item) {
+        return DropdownMenuItem<String>(
+          value: item,
+          child: Text(item),
+        );
+      }).toList(),
+      decoration: InputDecoration(
+        labelText: 'Select Category',
+      ),
+    );
+  }
+
+  Widget Senddata() {
+    return ElevatedButton(
+        style: ButtonStyle(
+          backgroundColor: MaterialStatePropertyAll(Colors.blue[900]),
+          foregroundColor: const MaterialStatePropertyAll(Colors.white),
+        ),
+        onPressed: () {
+          if (_formKey.currentState!.validate()) {
+            Additem()
+                .Add(
+                  _itemname.text,
+                  _detail.text,
+                )
+                .then((value) => Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const CategoriesPage())));
+          }
+        },
+        child: const Text("ยืนยัน"));
   }
 }

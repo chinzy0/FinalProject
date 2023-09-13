@@ -37,6 +37,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
           }
         },
         backgroundColor: Colors.blue[900],
+        
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.white.withOpacity(.40),
         selectedFontSize: 14,
@@ -61,6 +62,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
       ),
       body: ListView(
         children: [
+          
           Padding(
             padding: EdgeInsets.only(left: 3, bottom: 5, top: 15),
             child: Text(
