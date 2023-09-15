@@ -1,6 +1,9 @@
-import 'package:finalproject/services/addnewitem_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:finalproject/views/category.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 class AddMoreNewItem extends StatefulWidget {
   const AddMoreNewItem({super.key});
@@ -14,15 +17,9 @@ class _AddMoreNewItemState extends State<AddMoreNewItem> {
   final TextEditingController _itemname = TextEditingController();
   final TextEditingController _detail = TextEditingController();
 
-  List<String> dropdownItems = [
-    'Book',
-    'Cloth',
-    'Electrical',
-    'Ferniture',
-    'Sport',
-    'Stationery'
-  ];
-  String selectedValue = 'Book';
+  String? selectedDocument;
+  String? _imageUrl;
+  File? _image;
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +56,16 @@ class _AddMoreNewItemState extends State<AddMoreNewItem> {
                 SizedBox(
                   height: 10,
                 ),
+                if (_image != null)
+                  Image.file(
+                    _image!,
+                    width: 100,
+                    height: 100,
+                  ),
+                uploadImage(),
+                SizedBox(
+                  height: 10,
+                ),
                 Senddata()
               ],
             ),
@@ -79,7 +86,7 @@ class _AddMoreNewItemState extends State<AddMoreNewItem> {
       ),
       validator: (value) {
         if (value!.isEmpty) {
-          return 'กรุณากรอกข้อมูลให้ครบ';
+          return 'Please fill in complete information.';
         }
         return null;
       },
@@ -97,7 +104,7 @@ class _AddMoreNewItemState extends State<AddMoreNewItem> {
       ),
       validator: (value) {
         if (value!.isEmpty) {
-          return 'กรุณากรอกข้อมูลให้ครบ';
+          return 'Please fill in complete information.';
         }
         return null;
       },
@@ -105,44 +112,130 @@ class _AddMoreNewItemState extends State<AddMoreNewItem> {
   }
 
   Widget Categoryinput() {
-    return DropdownButtonFormField<String>(
-      value: selectedValue,
-      onChanged: (newValue) {
-        setState(() {
-          selectedValue = newValue!;
-        });
-      },
-      items: dropdownItems.map((item) {
-        return DropdownMenuItem<String>(
-          value: item,
-          child: Text(item),
-        );
-      }).toList(),
-      decoration: InputDecoration(
-        labelText: 'Select Category',
+    return Center(
+      child: ListBody(
+        children: [
+          DropdownButton(
+            hint:
+                Text('Select Category'), // ข้อความที่แสดงเมื่อยังไม่เลือกเอกสาร
+            value: selectedDocument,
+            onChanged: (newValue) {
+              setState(() {
+                selectedDocument = newValue;
+              });
+            },
+            items: [
+              DropdownMenuItem(
+                value: 'book',
+                child: Text('Book'),
+              ),
+              DropdownMenuItem(
+                value: 'cloth',
+                child: Text('Cloth'),
+              ),
+              DropdownMenuItem(
+                value: 'electrical',
+                child: Text('Electrical'),
+              ),
+              DropdownMenuItem(
+                value: 'ferniture',
+                child: Text('Ferniture'),
+              ),
+              DropdownMenuItem(
+                value: 'sport',
+                child: Text('Sport'),
+              ),
+              DropdownMenuItem(
+                value: 'stationery',
+                child: Text('Stationery'),
+              ),
+            ],
+          ),
+          SizedBox(height: 20),
+          if (selectedDocument == null)
+            Text(
+              'Please select a category',
+              style: TextStyle(color: Colors.red),
+            ),
+        ],
       ),
     );
   }
 
   Widget Senddata() {
     return ElevatedButton(
-        style: ButtonStyle(
-          backgroundColor: MaterialStatePropertyAll(Colors.blue[900]),
-          foregroundColor: const MaterialStatePropertyAll(Colors.white),
-        ),
-        onPressed: () {
-          if (_formKey.currentState!.validate()) {
-            Additem()
-                .AddBook(
-                  _itemname.text,
-                  _detail.text,
-                )
-                .then((value) => Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const CategoriesPage())));
+      style: ButtonStyle(
+        backgroundColor: MaterialStatePropertyAll(Colors.blue[900]),
+        foregroundColor: const MaterialStatePropertyAll(Colors.white),
+      ),
+      onPressed: () {
+        if (_formKey.currentState!.validate()) {
+          String? selectedValue = selectedDocument; // รับค่าจาก Dropdown
+          if (selectedValue != null) {
+            // สร้าง reference ไปยัง document ที่เลือก
+            DocumentReference documentReference = FirebaseFirestore.instance
+                .collection('Items')
+                .doc(selectedValue)
+                .collection('dataItems')
+                .doc();
+
+            // สร้างข้อมูลที่คุณต้องการบันทึก
+            Map<String, dynamic> data = {
+              'item_name': _itemname.text,
+              'detail': _detail.text,
+              'image_url': _imageUrl, // เพิ่ม URL ของรูปภาพ
+            };
+
+            // บันทึกข้อมูลลง Firebase Firestore
+            documentReference.set(data).then((value) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const CategoriesPage(),
+                ),
+              );
+            }).catchError((error) {
+              // หากเกิดข้อผิดพลาดในการบันทึกข้อมูล
+              print('เกิดข้อผิดพลาดในการบันทึกข้อมูล: $error');
+            });
           }
-        },
-        child: const Text("ยืนยัน"));
+        }
+      },
+      child: const Text("Submit"),
+    );
+  }
+
+  Widget uploadImage() {
+    return ElevatedButton(
+      onPressed: _getImage,
+      child: Text("Upload Image"),
+    );
+  }
+
+  Future<void> _getImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      final file = File(pickedFile.path);
+
+      // อัปโหลดรูปภาพไปยัง Firebase Storage
+      try {
+        final storageRef = firebase_storage.FirebaseStorage.instance
+            .ref()
+            .child('images')
+            .child('item_${DateTime.now().millisecondsSinceEpoch}.jpg');
+
+        await storageRef.putFile(file);
+        final imageUrl = await storageRef.getDownloadURL();
+
+        setState(() {
+          _image = file;
+          _imageUrl = imageUrl;
+        });
+      } catch (error) {
+        print('เกิดข้อผิดพลาดในการอัปโหลดรูปภาพ: $error');
+      }
+    }
   }
 }

@@ -102,7 +102,7 @@ class _LoginPageState extends State<LoginPage> {
       decoration: const InputDecoration(labelText: "E-mail"),
       validator: (value) {
         if (value!.isEmpty) {
-          return "กรุณากรอก Email";
+          return "Please enter Email";
         }
         return null;
       },
@@ -115,7 +115,7 @@ class _LoginPageState extends State<LoginPage> {
       obscureText: true,
       validator: (value) {
         if (value!.isEmpty) {
-          return "กรุณากรอก Password";
+          return "Please enter Password";
         }
         return null;
       },
