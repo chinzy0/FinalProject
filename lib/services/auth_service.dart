@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 class AuthService {
   Future<void> signUpWithEmail(String email, String password, String name,
-      String tel, String idline, String category) async {
+      String tel, String idline) async {
     try {
       // Create New User Account to Firebase Authen
       final credential =
@@ -21,7 +21,6 @@ class AuthService {
         "name": name,
         "tel": tel,
         "idline": idline,
-        "category": category,
       });
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
@@ -58,5 +57,25 @@ class AuthService {
 
   Future<void> signOut() async {
     await FirebaseAuth.instance.signOut();
+  }
+
+  Future<Map<String, dynamic>> getUserData(String uid) async {
+    try {
+      DocumentSnapshot userSnapshot =
+          await FirebaseFirestore.instance.collection("Users").doc(uid).get();
+
+      if (userSnapshot.exists) {
+        Map<String, dynamic> userData =
+            userSnapshot.data() as Map<String, dynamic>;
+        return userData;
+      } else {
+        // Return an empty map when no user data is found
+        return {};
+      }
+    } catch (e) {
+      print('Error fetching user data: $e');
+      // Handle the error as needed, you might choose to throw an exception or return a specific error map
+      return {}; // Return an empty map in case of error
+    }
   }
 }

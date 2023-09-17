@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:finalproject/views/categorypage/bookpage.dart';
 import 'package:flutter/material.dart';
 
 class Homepage extends StatefulWidget {
@@ -36,133 +38,123 @@ class _HomepageState extends State<Homepage> {
           ),
         ],
       ),
-      body: ListView(
-        children: [
-          Container(
-            padding: EdgeInsets.only(top: 10, left: 15, right: 15, bottom: 10),
-            decoration: BoxDecoration(
-                color: Colors.blue[900],
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(25),
-                  bottomRight: Radius.circular(25),
-                )),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                ),
-                SizedBox(
-                  height: 15,
-                ),
-                Padding(
-                  padding: EdgeInsets.only(left: 3, bottom: 15),
-                  child: Text(
-                    "Reused leftover Items",
-                    style: TextStyle(
-                        fontSize: 25,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 1,
-                        wordSpacing: 2,
-                        color: Colors.white),
-                  ),
-                ),
-                Container(
-                  margin: EdgeInsets.only(top: 5, bottom: 20),
-                  width: MediaQuery.of(context).size.width,
-                  height: 55,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(35)),
-                  child: TextFormField(
-                    decoration: InputDecoration(
-                        border: InputBorder.none,
-                        hintText: "Serch here",
-                        hintStyle:
-                            TextStyle(color: Colors.black.withOpacity(0.5)),
-                        prefixIcon: Icon(
-                          Icons.search,
-                          size: 25,
-                        )),
-                  ),
-                ),
-              ],
+      body: SafeArea(
+        top: true,
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            Container(
+              width: double.infinity,
+              height: 50, // กำหนดความสูงตามที่คุณต้องการ
+              color: Colors.white,
             ),
-          ),
-          Padding(
-            padding: EdgeInsets.only(left: 3, bottom: 15),
-            child: Text(
-              "Reused leftover Items",
+            Text(
+              'Category',
               style: TextStyle(
                   fontSize: 25,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w900,
                   letterSpacing: 1,
                   wordSpacing: 2,
                   color: Colors.black),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Container(
-              height: 200,
-              decoration: const BoxDecoration(
-                  image: DecorationImage(
-                      image: AssetImage("assets/images/book.jpg"),
-                      fit: BoxFit.fitWidth)),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Container(
-              height: 200,
-              decoration: const BoxDecoration(
-                  image: DecorationImage(
-                      image: AssetImage("assets/images/cloth.png"),
-                      fit: BoxFit.fitWidth)),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Container(
-              height: 200,
-              decoration: const BoxDecoration(
-                image: DecorationImage(
-                    image: AssetImage("assets/images/electrical.jpg"),
-                    fit: BoxFit.fitWidth),
+            Container(
+              height: 130,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: 6,
+                itemBuilder: (BuildContext context, int index) {
+                  // Define a list of specific texts
+                  List<String> specificTexts = [
+                    'Book',
+                    'Cloth',
+                    'Electrical',
+                    'Ferniture',
+                    'Sport',
+                    'Stationery',
+                  ];
+                  List<String> imagePaths = [
+                    'assets/images/book.jpg',
+                    'assets/images/cloth.png',
+                    'assets/images/electrical.jpg',
+                    'assets/images/ferniture.jpg',
+                    'assets/images/sport.jpg',
+                    'assets/images/stationery.jpg',
+                  ];
+
+                  return GestureDetector(
+                    onTap: () {
+                      // Navigate to the corresponding route when the card is tapped
+                    },
+                    child: Card(
+                      color: Colors.white.withOpacity(1),
+                      clipBehavior: Clip.antiAliasWithSaveLayer,
+                      elevation: 4,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(0),
+                            child: Image.asset(
+                              imagePaths[index],
+                              width: 100,
+                              height: 100,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          Text(
+                            specificTexts[
+                                index], // Use specific text based on the index
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Container(
-              height: 200,
-              decoration: const BoxDecoration(
-                  image: DecorationImage(
-                      image: AssetImage("assets/images/ferniture.jpg"),
-                      fit: BoxFit.fitWidth)),
+            SizedBox(
+              height: 20,
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Container(
-              height: 200,
-              decoration: const BoxDecoration(
-                  image: DecorationImage(
-                      image: AssetImage("assets/images/sport.jpg"),
-                      fit: BoxFit.fitWidth)),
+            Container(
+              width: double.infinity,
+              height: 1, // กำหนดความสูงตามที่คุณต้องการ
+              color: Colors.black,
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Container(
-              height: 200,
-              decoration: const BoxDecoration(
-                  image: DecorationImage(
-                      image: AssetImage("assets/images/stationery.jpg"),
-                      fit: BoxFit.fitWidth)),
+            SizedBox(
+              height: 20,
             ),
-          ),
-        ],
+            Container(
+              child: Card(
+                color: Colors.white.withOpacity(1),
+                clipBehavior: Clip.antiAliasWithSaveLayer,
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(0),
+                      child: Image.asset(
+                        'assets/images/ferniture.jpg',
+                        width: 100,
+                        height: 100,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    Text(
+                      '123', // Use specific text based on the index
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

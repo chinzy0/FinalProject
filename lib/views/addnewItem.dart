@@ -170,34 +170,55 @@ class _AddMoreNewItemState extends State<AddMoreNewItem> {
       ),
       onPressed: () {
         if (_formKey.currentState!.validate()) {
-          String? selectedValue = selectedDocument; // รับค่าจาก Dropdown
-          if (selectedValue != null) {
-            // สร้าง reference ไปยัง document ที่เลือก
-            DocumentReference documentReference = FirebaseFirestore.instance
-                .collection('Items')
-                .doc(selectedValue)
-                .collection('dataItems')
-                .doc();
+          if (_image == null) {
+            // ถ้าไม่มีรูปถูกเลือก แสดงข้อความแจ้งเตือน
+            showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  title: Text('Warning'),
+                  content: Text('Please upload an image.'),
+                  actions: <Widget>[
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop(); // ปิดกล่องโต้ตอบ
+                      },
+                      child: Text('OK'),
+                    ),
+                  ],
+                );
+              },
+            );
+          } else {
+            String? selectedValue = selectedDocument; // รับค่าจาก Dropdown
+            if (selectedValue != null) {
+              // สร้าง reference ไปยัง document ที่เลือก
+              DocumentReference documentReference = FirebaseFirestore.instance
+                  .collection('Items')
+                  .doc(selectedValue)
+                  .collection('dataItems')
+                  .doc();
 
-            // สร้างข้อมูลที่คุณต้องการบันทึก
-            Map<String, dynamic> data = {
-              'item_name': _itemname.text,
-              'detail': _detail.text,
-              'image_url': _imageUrl, // เพิ่ม URL ของรูปภาพ
-            };
+              // สร้างข้อมูลที่คุณต้องการบันทึก
+              Map<String, dynamic> data = {
+                'item_name': _itemname.text,
+                'detail': _detail.text,
+                'image_url': _imageUrl, // เพิ่ม URL ของรูปภาพ
+              };
 
-            // บันทึกข้อมูลลง Firebase Firestore
-            documentReference.set(data).then((value) {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const CategoriesPage(),
-                ),
-              );
-            }).catchError((error) {
-              // หากเกิดข้อผิดพลาดในการบันทึกข้อมูล
-              print('เกิดข้อผิดพลาดในการบันทึกข้อมูล: $error');
-            });
+              // บันทึกข้อมูลลง Firebase Firestore
+              documentReference.set(data).then((value) {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const CategoriesPage(),
+                  ),
+                );
+              }).catchError((error) {
+                // หากเกิดข้อผิดพลาดในการบันทึกข้อมูล
+                print('Error saving data: $error');
+              });
+            }
           }
         }
       },
@@ -216,10 +237,33 @@ class _AddMoreNewItemState extends State<AddMoreNewItem> {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
-    if (pickedFile != null) {
-      final file = File(pickedFile.path);
+    if (pickedFile == null) {
+      // แสดงข้อความแจ้งเตือนเมื่อไม่มีรูปภาพถูกเลือก
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('Warning'),
+            content: Text('No image selected.'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // ปิดกล่องโต้ตอบ
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+      return; // ไม่มีรูปภาพที่ถูกเลือก จึงออกจากเมธอด
+    }
 
-      // อัปโหลดรูปภาพไปยัง Firebase Storage
+    final file = File(pickedFile.path);
+
+    // ตรวจสอบว่ารูปภาพถูกเลือกและไม่ว่างเปล่า
+    if (file.existsSync()) {
+      // ตรวจสอบความสำเร็จของการอัปโหลด
       try {
         final storageRef = firebase_storage.FirebaseStorage.instance
             .ref()
@@ -227,14 +271,53 @@ class _AddMoreNewItemState extends State<AddMoreNewItem> {
             .child('item_${DateTime.now().millisecondsSinceEpoch}.jpg');
 
         await storageRef.putFile(file);
+
         final imageUrl = await storageRef.getDownloadURL();
 
         setState(() {
           _image = file;
           _imageUrl = imageUrl;
         });
+
+        // แสดงข้อความแจ้งเตือนเมื่ออัปโหลดสำเร็จ
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text('Success'),
+              content: Text('Image uploaded successfully!'),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // ปิดกล่องโต้ตอบ
+                  },
+                  child: Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
       } catch (error) {
-        print('เกิดข้อผิดพลาดในการอัปโหลดรูปภาพ: $error');
+        print('Error uploading image: $error');
+
+        // แสดงข้อความแจ้งเตือนเมื่อเกิดข้อผิดพลาดในการอัปโหลด
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text('Error'),
+              content: Text('An error occurred while uploading the image.'),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // ปิดกล่องโต้ตอบ
+                  },
+                  child: Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
       }
     }
   }

@@ -14,6 +14,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
   final List<Widget> _pages = [
     ProfilePage(),
     AddMoreNewItem(),
+    CategoriesPage(),
   ];
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,13 +32,30 @@ class _CategoriesPageState extends State<CategoriesPage> {
               builder: (context) => AddMoreNewItem(),
             ));
           } else if (index == 2) {
-            Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => ProfilePage(),
-            ));
+            Navigator.of(context).push(
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) {
+                  return ProfilePage(); // หน้าปลายทางที่คุณต้องการเปลี่ยนไป
+                },
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                  const begin = Offset(1.0, 0.0);
+                  const end = Offset.zero;
+                  const curve = Curves.easeInOut;
+                  var tween = Tween(begin: begin, end: end)
+                      .chain(CurveTween(curve: curve));
+                  var offsetAnimation = animation.drive(tween);
+
+                  return SlideTransition(
+                    position: offsetAnimation,
+                    child: child,
+                  );
+                },
+              ),
+            );
           }
         },
         backgroundColor: Colors.blue[900],
-        
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.white.withOpacity(.40),
         selectedFontSize: 14,
@@ -46,7 +64,6 @@ class _CategoriesPageState extends State<CategoriesPage> {
           BottomNavigationBarItem(
             icon: Icon(
               Icons.home_filled,
-              color: Colors.white,
             ),
             label: 'Home',
           ),
@@ -62,7 +79,6 @@ class _CategoriesPageState extends State<CategoriesPage> {
       ),
       body: ListView(
         children: [
-          
           Padding(
             padding: EdgeInsets.only(left: 3, bottom: 5, top: 15),
             child: Text(

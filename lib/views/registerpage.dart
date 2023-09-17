@@ -14,7 +14,6 @@ final TextEditingController _password = TextEditingController();
 final TextEditingController _name = TextEditingController();
 final TextEditingController _tel = TextEditingController();
 final TextEditingController _idline = TextEditingController();
-final TextEditingController _category = TextEditingController();
 
 class _RegisterPageState extends State<RegisterPage> {
   @override
@@ -160,7 +159,7 @@ class _RegisterPageState extends State<RegisterPage> {
           if (_formKey.currentState!.validate()) {
             AuthService()
                 .signUpWithEmail(_email.text, _password.text, _name.text,
-                    _tel.text, _idline.text, _category.text)
+                    _tel.text, _idline.text)
                 .then((value) => Navigator.pop(context));
           }
         },
