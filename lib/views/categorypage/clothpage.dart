@@ -1,45 +1,84 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:finalproject/views/addnewItem.dart';
 import 'package:finalproject/views/category.dart';
 import 'package:finalproject/views/categorypage/bookpage.dart';
-import 'package:finalproject/views/categorypage/clothpage.dart';
 import 'package:finalproject/views/categorypage/electricalpage.dart';
 import 'package:finalproject/views/categorypage/ferniturepage.dart';
 import 'package:finalproject/views/categorypage/sportpage.dart';
 import 'package:finalproject/views/categorypage/stationerypage.dart';
+import 'package:finalproject/views/profilepage.dart';
 import 'package:flutter/material.dart';
 
-class Homepage extends StatefulWidget {
-  const Homepage({super.key});
+class ClothPage extends StatefulWidget {
+  const ClothPage({super.key});
 
   @override
-  State<Homepage> createState() => _HomepageState();
+  State<ClothPage> createState() => _ClothPageState();
 }
 
-class _HomepageState extends State<Homepage> {
+class _ClothPageState extends State<ClothPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       bottomNavigationBar: BottomNavigationBar(
+        onTap: (index) {
+          // เมื่อแท็บถูกเลือกให้ทำการเปลี่ยนหน้าด้วย Navigator
+          if (index == 0) {
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => CategoriesPage(),
+            ));
+          } else if (index == 1) {
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => AddMoreNewItem(),
+            ));
+          } else if (index == 2) {
+            Navigator.of(context).push(
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) {
+                  return ProfilePage(); // หน้าปลายทางที่คุณต้องการเปลี่ยนไป
+                },
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                  const begin = Offset(1.0, 0.0);
+                  const end = Offset.zero;
+                  const curve = Curves.easeInOut;
+                  var tween = Tween(begin: begin, end: end)
+                      .chain(CurveTween(curve: curve));
+                  var offsetAnimation = animation.drive(tween);
+
+                  return SlideTransition(
+                    position: offsetAnimation,
+                    child: child,
+                  );
+                },
+              ),
+            );
+          }
+        },
         backgroundColor: Colors.blue[900],
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white.withOpacity(.40),
         selectedFontSize: 14,
         unselectedFontSize: 12,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(
               Icons.home_filled,
-              color: Colors.white,
+              color: Colors.white54,
             ),
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.add_box_rounded),
+            icon: Icon(
+              Icons.add_box_rounded,
+              color: Colors.white54,
+            ),
             label: 'Add',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person_3_rounded),
+            icon: Icon(
+              Icons.person_3_rounded,
+              color: Colors.white54,
+            ),
             label: 'Profile',
           ),
         ],
@@ -55,7 +94,7 @@ class _HomepageState extends State<Homepage> {
               color: Colors.white,
             ),
             Text(
-              'Category',
+              'Cloth Category',
               style: TextStyle(
                   fontSize: 25,
                   fontWeight: FontWeight.w900,
@@ -176,7 +215,7 @@ class _HomepageState extends State<Homepage> {
               child: StreamBuilder(
                 stream: FirebaseFirestore.instance
                     .collection('Items')
-                    .doc('book')
+                    .doc('cloth')
                     .collection('dataItems')
                     .snapshots(),
                 builder: (context, snapshot) {

@@ -1,3 +1,4 @@
+import 'package:finalproject/views/category.dart';
 import 'package:finalproject/views/homepage.dart';
 import 'package:finalproject/views/loginpage.dart';
 import 'package:flutter/material.dart';
@@ -24,7 +25,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: Homepage(),
+      home: LoginPage(),
     );
   }
 }

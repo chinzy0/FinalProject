@@ -1,4 +1,10 @@
 import 'package:finalproject/views/addnewItem.dart';
+import 'package:finalproject/views/categorypage/bookpage.dart';
+import 'package:finalproject/views/categorypage/clothpage.dart';
+import 'package:finalproject/views/categorypage/electricalpage.dart';
+import 'package:finalproject/views/categorypage/ferniturepage.dart';
+import 'package:finalproject/views/categorypage/sportpage.dart';
+import 'package:finalproject/views/categorypage/stationerypage.dart';
 import 'package:finalproject/views/profilepage.dart';
 import 'package:flutter/material.dart';
 
@@ -107,7 +113,9 @@ class _CategoriesPageState extends State<CategoriesPage> {
       padding: EdgeInsets.all(4.0),
       child: GestureDetector(
         onTap: () {
-          print('Padding onTap');
+          Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => BookPage(),
+          ));
         },
         child: Container(
           height: 100,
@@ -138,7 +146,9 @@ class _CategoriesPageState extends State<CategoriesPage> {
       padding: EdgeInsets.all(4.0),
       child: GestureDetector(
         onTap: () {
-          print('Padding onTap');
+          Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => ClothPage(),
+          ));
         },
         child: Container(
           height: 100,
@@ -169,7 +179,9 @@ class _CategoriesPageState extends State<CategoriesPage> {
       padding: EdgeInsets.all(4.0),
       child: GestureDetector(
         onTap: () {
-          print('Padding onTap');
+          Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => ElectricalPage(),
+          ));
         },
         child: Container(
           height: 100,
@@ -200,7 +212,9 @@ class _CategoriesPageState extends State<CategoriesPage> {
       padding: EdgeInsets.all(4.0),
       child: GestureDetector(
         onTap: () {
-          print('Padding onTap');
+          Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => FerniturePage(),
+          ));
         },
         child: Container(
           height: 100,
@@ -231,7 +245,9 @@ class _CategoriesPageState extends State<CategoriesPage> {
       padding: EdgeInsets.all(4.0),
       child: GestureDetector(
         onTap: () {
-          print('Padding onTap');
+          Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => SportPage(),
+          ));
         },
         child: Container(
           height: 100,
@@ -262,7 +278,9 @@ class _CategoriesPageState extends State<CategoriesPage> {
       padding: EdgeInsets.all(4.0),
       child: GestureDetector(
         onTap: () {
-          print('Padding onTap');
+          Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => StationeryPage(),
+          ));
         },
         child: Container(
           height: 100,
