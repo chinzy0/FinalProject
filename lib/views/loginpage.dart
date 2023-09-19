@@ -30,19 +30,21 @@ class _LoginPageState extends State<LoginPage> {
                       borderRadius: BorderRadius.circular(16),
                     ),
                     margin: EdgeInsets.all(32),
-                    padding: EdgeInsets.all(24),
+                    padding: EdgeInsets.all(13),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
                         SizedBox(
-                          width: 320,
                           child: Column(
                             children: [
                               buildEmailInput(),
                               buildPasswordInput(),
                             ],
                           ),
+                        ),
+                        SizedBox(
+                          height: 10,
                         ),
                         buildEmailSignin(),
                         buildEmailSignup(),
@@ -54,7 +56,7 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget buildEmailSignup() {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(6.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -67,7 +69,7 @@ class _LoginPageState extends State<LoginPage> {
                     builder: (context) => const RegisterPage(),
                   ));
             },
-            child: const Text("Register now !"),
+            child: const Text("Register now"),
           )
         ],
       ),

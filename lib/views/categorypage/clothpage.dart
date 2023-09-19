@@ -6,6 +6,7 @@ import 'package:finalproject/views/categorypage/electricalpage.dart';
 import 'package:finalproject/views/categorypage/ferniturepage.dart';
 import 'package:finalproject/views/categorypage/sportpage.dart';
 import 'package:finalproject/views/categorypage/stationerypage.dart';
+import 'package:finalproject/views/itemdetailpage.dart';
 import 'package:finalproject/views/profilepage.dart';
 import 'package:flutter/material.dart';
 
@@ -219,9 +220,18 @@ class _ClothPageState extends State<ClothPage> {
                     .collection('dataItems')
                     .snapshots(),
                 builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
                     return Center(
                       child: CircularProgressIndicator(),
+                    );
+                  } else if (!snapshot.hasData ||
+                      snapshot.data?.docs.isEmpty == true) {
+                    // Display a message when there are no items.
+                    return Center(
+                      child: Text(
+                        'No items available',
+                        style: TextStyle(fontSize: 18),
+                      ),
                     );
                   }
 
@@ -234,26 +244,36 @@ class _ClothPageState extends State<ClothPage> {
                       var itemName = item['item_name'];
                       var itemDescription = item['detail'];
                       var imageUrl = item[
-                          'image_url']; // Replace 'image_url' with the actual field name for the image URL.
+                          'image_url']; // Replace with your image field name.
 
                       return Padding(
-                        padding: const EdgeInsets.all(
-                            1), // Add padding around each item.
+                        padding: const EdgeInsets.all(1),
                         child: Card(
-                          elevation:
-                              4, // Add elevation to the card for a shadow effect.
+                          elevation: 4,
                           child: ListTile(
-                            contentPadding: EdgeInsets.all(
-                                10), // Add padding within the ListTile.
-                            title: Text(itemName,
-                                style: TextStyle(
-                                    fontSize: 22, fontWeight: FontWeight.bold)),
+                            contentPadding: EdgeInsets.all(10),
+                            title: Text(
+                              itemName,
+                              style: TextStyle(
+                                  fontSize: 22, fontWeight: FontWeight.bold),
+                            ),
                             subtitle: Text(itemDescription),
                             leading: imageUrl != null
                                 ? Image.network(imageUrl,
                                     width: 100, height: 300)
                                 : null,
-                            // Customize the image size with 'width' and 'height'.
+                            trailing: ElevatedButton(
+                              onPressed: () {
+                                // Navigate to a details page when the button is pressed.
+                                // You can pass the item data to the details page if needed.
+                                Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) => ItemDetailsPage(
+                                      item:
+                                          item.data() as Map<String, dynamic>),
+                                ));
+                              },
+                              child: Text("Details"),
+                            ),
                           ),
                         ),
                       );
