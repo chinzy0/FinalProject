@@ -258,9 +258,22 @@ class _StationeryPageState extends State<StationeryPage> {
                             ),
                             subtitle: Text(itemDescription),
                             leading: imageUrl != null
-                                ? Image.network(imageUrl,
-                                    width: 100, height: 300)
+                                ? Container(
+                                    width: 100, // Set the desired width here
+                                    height: 100, // Set the desired height here
+                                    child: Image.network(
+                                      imageUrl,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  )
                                 : null,
+                            trailing: ElevatedButton(
+                              onPressed: () {
+                                _showItemDetailsDialog(
+                                    item.data() as Map<String, dynamic>);
+                              },
+                              child: Text("Details"),
+                            ),
                           ),
                         ),
                       );
@@ -275,53 +288,30 @@ class _StationeryPageState extends State<StationeryPage> {
     );
   }
 
-  Widget getItem(QuerySnapshot<Map<String, dynamic>> snapshot) {
-    var items = snapshot.docs;
-
-    return Expanded(
-      child: ListView.builder(
-        padding: EdgeInsets.all(5),
-        shrinkWrap: true,
-        scrollDirection: Axis.vertical,
-        itemCount: items.length,
-        itemBuilder: (BuildContext context, int index) {
-          var itemData = items[index].data() as Map<String, dynamic>;
-
-          return Card(
-            clipBehavior: Clip.antiAliasWithSaveLayer,
-            elevation: 4,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+  void _showItemDetailsDialog(Map<String, dynamic> itemData) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Item Details'),
+          content: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Item Name: ${itemData['item_name']}'),
+              Text('Detail: ${itemData['detail']}'),
+              // Add more details as needed
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: Text('Close'),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                InkWell(
-                  splashColor: Colors.transparent,
-                  focusColor: Colors.transparent,
-                  hoverColor: Colors.transparent,
-                  highlightColor: Colors.transparent,
-                  onTap: () async {},
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
-                      itemData[
-                          'image'], // Replace 'image' with the actual field name in your Firestore document
-                      width: 200,
-                      height: 200,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-                Text(
-                  itemData[
-                      'title'], // Replace 'title' with the actual field name in your Firestore document
-                ),
-              ],
-            ),
-          );
-        },
-      ),
+          ],
+        );
+      },
     );
   }
 }

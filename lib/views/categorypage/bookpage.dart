@@ -7,6 +7,7 @@ import 'package:finalproject/views/categorypage/ferniturepage.dart';
 import 'package:finalproject/views/categorypage/sportpage.dart';
 import 'package:finalproject/views/categorypage/stationerypage.dart';
 import 'package:finalproject/views/profilepage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class BookPage extends StatefulWidget {
@@ -242,25 +243,55 @@ class _BookPageState extends State<BookPage> {
                       var item = items[index];
                       var itemName = item['item_name'];
                       var itemDescription = item['detail'];
-                      var imageUrl = item[
-                          'image_url']; // Replace with your image field name.
+                      var imageUrl = item['image_url'];
+                      var itemStatus =
+                          item['status']; // เพิ่มการเรียกข้อมูลสถานะของสิ่งของ
+
+                      // เลือกสีของรายการสิ่งของตามสถานะ
+                      Color itemColor = itemStatus == 'Waiting for confirmation'
+                          ? Colors
+                              .yellow // สีเหลืองสำหรับสิ่งของที่อยู่ในสถานะ "Waiting for confirmation"
+                          : Colors
+                              .white; // สีขาวสำหรับสิ่งของที่ไม่ได้อยู่ในสถานะ "Waiting for confirmation"
 
                       return Padding(
                         padding: const EdgeInsets.all(1),
                         child: Card(
                           elevation: 4,
+                          color: itemColor, // ใช้สีตามสถานะที่เลือก
                           child: ListTile(
                             contentPadding: EdgeInsets.all(10),
                             title: Text(
                               itemName,
                               style: TextStyle(
-                                  fontSize: 22, fontWeight: FontWeight.bold),
+                                  fontSize: 18, fontWeight: FontWeight.bold),
                             ),
                             subtitle: Text(itemDescription),
                             leading: imageUrl != null
-                                ? Image.network(imageUrl,
-                                    width: 100, height: 300)
+                                ? Container(
+                                    width:
+                                        100, // กำหนดความกว้างที่ต้องการที่นี่
+                                    height: 100, // กำหนดความสูงที่ต้องการที่นี่
+                                    child: Image.network(
+                                      imageUrl,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  )
                                 : null,
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                SizedBox(width: 8),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    _showItemDetailsDialog(
+                                        item.data() as Map<String, dynamic>,
+                                        item.reference);
+                                  },
+                                  child: Text("Details"),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       );
@@ -275,53 +306,168 @@ class _BookPageState extends State<BookPage> {
     );
   }
 
-  Widget getItem(QuerySnapshot<Map<String, dynamic>> snapshot) {
-    var items = snapshot.docs;
+  void _showItemDetailsDialog(
+      Map<String, dynamic> itemData, DocumentReference itemRef) {
+    String itemName = itemData['item_name'];
+    String itemDetail = itemData['detail'];
+    String itemStatus = itemData['status'];
+    String imageUrl = itemData['image_url'];
+    String userId = itemData['user_id'];
 
-    return Expanded(
-      child: ListView.builder(
-        padding: EdgeInsets.all(5),
-        shrinkWrap: true,
-        scrollDirection: Axis.vertical,
-        itemCount: items.length,
-        itemBuilder: (BuildContext context, int index) {
-          var itemData = items[index].data() as Map<String, dynamic>;
+    FirebaseAuth auth = FirebaseAuth.instance;
+    String? currentUserId = auth.currentUser?.uid;
 
-          return Card(
-            clipBehavior: Clip.antiAliasWithSaveLayer,
-            elevation: 4,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                InkWell(
-                  splashColor: Colors.transparent,
-                  focusColor: Colors.transparent,
-                  hoverColor: Colors.transparent,
-                  highlightColor: Colors.transparent,
-                  onTap: () async {},
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
-                      itemData[
-                          'image'], // Replace 'image' with the actual field name in your Firestore document
-                      width: 200,
-                      height: 200,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-                Text(
-                  itemData[
-                      'title'], // Replace 'title' with the actual field name in your Firestore document
-                ),
-              ],
-            ),
+    if (currentUserId != null && currentUserId == userId) {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('Item Details',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            content: Text('You cannot accept your own item.'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('Close'),
+              ),
+            ],
           );
         },
-      ),
-    );
+      );
+    } else {
+      FirebaseFirestore.instance
+          .collection('Users') // Replace with your user collection name
+          .doc(userId) // Document ID of the user
+          .get()
+          .then((userData) {
+        if (userData.exists) {
+          String userName =
+              userData['name']; // Replace with the field name for the username.
+          String userEmail = userData['email'];
+          String userTel = userData['tel'];
+          String userLineID = userData['idline'];
+
+          showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: Text('Item Details',
+                    style:
+                        TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                content: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (imageUrl != null)
+                      Center(
+                        child: Image.network(
+                          imageUrl,
+                          width: 150,
+                          height: 150,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    SizedBox(height: 10),
+                    Text('Item Name:',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text(itemName, style: TextStyle(fontSize: 16)),
+                    SizedBox(height: 10),
+                    Text('Detail:',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text(itemDetail, style: TextStyle(fontSize: 16)),
+                    SizedBox(height: 10),
+                    Text('Status:',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text(itemStatus, style: TextStyle(fontSize: 16)),
+                    SizedBox(height: 10),
+                    Text('Uploaded by:',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text('$userName ', style: TextStyle(fontSize: 16)),
+                    SizedBox(height: 10),
+                    Text('Email:',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text('$userEmail', style: TextStyle(fontSize: 16)),
+                    SizedBox(height: 10),
+                    Text('Tel:',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text('$userTel', style: TextStyle(fontSize: 16)),
+                    SizedBox(height: 10),
+                    Text('LineID:',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text('$userLineID', style: TextStyle(fontSize: 16)),
+                  ],
+                ),
+                actions: <Widget>[
+                  ElevatedButton(
+                    onPressed: () {
+                      if (itemStatus != 'Waiting for confirmation') {
+                        _changeItemStatus(itemRef);
+                        Navigator.of(context).pop();
+                      } else {
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: Text('Item Status',
+                                  style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold)),
+                              content: Text(
+                                  'This item is already in "Waiting for confirmation" status.'),
+                              actions: <Widget>[
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: Text('Close'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      }
+                    },
+                    child: Text('Accept'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text('Close'),
+                  ),
+                ],
+              );
+            },
+          );
+        } else {
+          // Handle the case where user data does not exist.
+          print('User data does not exist.');
+        }
+      }).catchError((error) {
+        // Handle errors when fetching user data.
+        print('Error fetching user data: $error');
+      });
+    }
+  }
+
+  void _changeItemStatus(DocumentReference itemRef) {
+    // Assuming your Firestore documents have a "status" field.
+    // You can update the status as needed. For example, toggle between "available" and "claimed".
+    itemRef.update({'status': 'Waiting for confirmation'}).then((_) {
+      // Item status updated successfully.
+      // You can add any additional logic here if needed.
+    }).catchError((error) {
+      // Handle errors here if the update fails.
+      print('Error updating item status: $error');
+    });
   }
 }

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:finalproject/views/category.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:image_picker/image_picker.dart';
@@ -165,13 +166,12 @@ class _AddMoreNewItemState extends State<AddMoreNewItem> {
   Widget Senddata() {
     return ElevatedButton(
       style: ButtonStyle(
-        backgroundColor: MaterialStatePropertyAll(Colors.blue[900]),
-        foregroundColor: const MaterialStatePropertyAll(Colors.white),
+        backgroundColor: MaterialStateProperty.all(Colors.blue[900]),
+        foregroundColor: MaterialStateProperty.all(Colors.white),
       ),
       onPressed: () {
         if (_formKey.currentState!.validate()) {
           if (_image == null) {
-            // ถ้าไม่มีรูปถูกเลือก แสดงข้อความแจ้งเตือน
             showDialog(
               context: context,
               builder: (context) {
@@ -181,7 +181,7 @@ class _AddMoreNewItemState extends State<AddMoreNewItem> {
                   actions: <Widget>[
                     TextButton(
                       onPressed: () {
-                        Navigator.of(context).pop(); // ปิดกล่องโต้ตอบ
+                        Navigator.of(context).pop();
                       },
                       child: Text('OK'),
                     ),
@@ -190,40 +190,63 @@ class _AddMoreNewItemState extends State<AddMoreNewItem> {
               },
             );
           } else {
-            String? selectedValue = selectedDocument; // รับค่าจาก Dropdown
-            if (selectedValue != null) {
-              // สร้าง reference ไปยัง document ที่เลือก
-              DocumentReference documentReference = FirebaseFirestore.instance
-                  .collection('Items')
-                  .doc(selectedValue)
-                  .collection('dataItems')
-                  .doc();
-
-              // สร้างข้อมูลที่คุณต้องการบันทึก
-              Map<String, dynamic> data = {
-                'item_name': _itemname.text,
-                'detail': _detail.text,
-                'image_url': _imageUrl, // เพิ่ม URL ของรูปภาพ
-              };
-
-              // บันทึกข้อมูลลง Firebase Firestore
-              documentReference.set(data).then((value) {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const CategoriesPage(),
-                  ),
-                );
-              }).catchError((error) {
-                // หากเกิดข้อผิดพลาดในการบันทึกข้อมูล
-                print('Error saving data: $error');
-              });
-            }
+            uploadItemData();
           }
         }
       },
       child: const Text("Submit"),
     );
+  }
+
+  Future<void> uploadItemData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      String? selectedValue = selectedDocument;
+      if (selectedValue != null) {
+        DocumentReference documentReference = FirebaseFirestore.instance
+            .collection('Items')
+            .doc(selectedValue)
+            .collection('dataItems')
+            .doc();
+
+        Map<String, dynamic> data = {
+          'item_name': _itemname.text,
+          'detail': _detail.text,
+          'image_url': _imageUrl,
+          'status': "available",
+          'user_id': user.uid,
+        };
+
+        try {
+          await documentReference.set(data);
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const CategoriesPage(),
+            ),
+          );
+        } catch (error) {
+          print('Error saving data: $error');
+          showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: Text('Error'),
+                content: Text('An error occurred while saving the data.'),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text('OK'),
+                  ),
+                ],
+              );
+            },
+          );
+        }
+      }
+    }
   }
 
   Widget uploadImage() {

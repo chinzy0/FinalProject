@@ -6,6 +6,7 @@ import 'package:finalproject/views/categorypage/ferniturepage.dart';
 import 'package:finalproject/views/categorypage/sportpage.dart';
 import 'package:finalproject/views/categorypage/stationerypage.dart';
 import 'package:finalproject/views/profilepage.dart';
+import 'package:finalproject/views/uploadhistorypage.dart';
 import 'package:flutter/material.dart';
 
 class CategoriesPage extends StatefulWidget {
@@ -17,13 +18,33 @@ class CategoriesPage extends StatefulWidget {
 
 class _CategoriesPageState extends State<CategoriesPage> {
   int _currentIndex = 0;
-  final List<Widget> _pages = [
-    ProfilePage(),
-    AddMoreNewItem(),
-    CategoriesPage(),
-  ];
+
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.blue[900],
+        title: Text(
+          'Home page',
+          style: TextStyle(color: Colors.white),
+        ),
+        automaticallyImplyLeading: false,
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(
+              Icons.history_rounded,
+              color: Colors.white,
+            ), // ไอคอนที่คุณต้องการเพิ่ม
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => UploadHistoryPage(),
+                ),
+              );
+            },
+          ),
+        ],
+      ), // ใช้ AppBar ที่เราสร้าง
+
       backgroundColor: Colors.white,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
