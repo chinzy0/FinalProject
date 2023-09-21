@@ -7,7 +7,9 @@ import 'package:finalproject/views/categorypage/electricalpage.dart';
 import 'package:finalproject/views/categorypage/ferniturepage.dart';
 import 'package:finalproject/views/categorypage/stationerypage.dart';
 import 'package:finalproject/views/profilepage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class SportPage extends StatefulWidget {
   const SportPage({super.key});
@@ -217,7 +219,10 @@ class _SportPageState extends State<SportPage> {
                     .collection('Items')
                     .doc('sport')
                     .collection('dataItems')
-                    .snapshots(),
+                    .where('status', whereIn: [
+                  'Waiting for confirmation',
+                  'Available'
+                ]).snapshots(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return Center(
@@ -242,31 +247,55 @@ class _SportPageState extends State<SportPage> {
                       var item = items[index];
                       var itemName = item['item_name'];
                       var itemDescription = item['detail'];
-                      var imageUrl = item[
-                          'image_url']; // Replace with your image field name.
+                      var imageUrl = item['image_url'];
+                      var itemStatus =
+                          item['status']; // เพิ่มการเรียกข้อมูลสถานะของสิ่งของ
+
+                      // เลือกสีของรายการสิ่งของตามสถานะ
+                      Color itemColor = itemStatus == 'Waiting for confirmation'
+                          ? Colors
+                              .yellow // สีเหลืองสำหรับสิ่งของที่อยู่ในสถานะ "Waiting for confirmation"
+                          : Colors
+                              .white; // สีขาวสำหรับสิ่งของที่ไม่ได้อยู่ในสถานะ "Waiting for confirmation"
 
                       return Padding(
                         padding: const EdgeInsets.all(1),
                         child: Card(
                           elevation: 4,
+                          color: itemColor, // ใช้สีตามสถานะที่เลือก
                           child: ListTile(
                             contentPadding: EdgeInsets.all(10),
                             title: Text(
                               itemName,
                               style: TextStyle(
-                                  fontSize: 22, fontWeight: FontWeight.bold),
+                                  fontSize: 18, fontWeight: FontWeight.bold),
                             ),
                             subtitle: Text(itemDescription),
                             leading: imageUrl != null
                                 ? Container(
-                                    width: 100, // Set the desired width here
-                                    height: 100, // Set the desired height here
+                                    width:
+                                        100, // กำหนดความกว้างที่ต้องการที่นี่
+                                    height: 100, // กำหนดความสูงที่ต้องการที่นี่
                                     child: Image.network(
                                       imageUrl,
                                       fit: BoxFit.cover,
                                     ),
                                   )
                                 : null,
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                SizedBox(width: 8),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    _showItemDetailsDialog(
+                                        item.data() as Map<String, dynamic>,
+                                        item.reference);
+                                  },
+                                  child: Text("Details"),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       );
@@ -280,4 +309,218 @@ class _SportPageState extends State<SportPage> {
       ),
     );
   }
+
+  void _showItemDetailsDialog(
+      Map<String, dynamic> itemData, DocumentReference itemRef) {
+    String itemName = itemData['item_name'];
+    String itemDetail = itemData['detail'];
+    String itemStatus = itemData['status'];
+    String imageUrl = itemData['image_url'];
+    String userId = itemData['user_id'];
+
+    Timestamp? uploadTime = itemData['upload_time'] as Timestamp?;
+
+    FirebaseAuth auth = FirebaseAuth.instance;
+    String? currentUserId = auth.currentUser?.uid;
+
+    if (currentUserId != null && currentUserId == userId) {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text(
+              'Item Details',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            content: Text('You cannot accept your own item.'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('Close'),
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      FirebaseFirestore.instance
+          .collection('Users') // Replace with your user collection name
+          .doc(userId) // Document ID of the user
+          .get()
+          .then((userData) {
+        if (userData.exists) {
+          String userName = userData['name'];
+          String userEmail = userData['email'];
+          String userTel = userData['tel'];
+          String userLineID = userData['idline'];
+
+          showDialog(
+            context: context,
+            builder: (context) {
+              return SingleChildScrollView(
+                child: AlertDialog(
+                  title: Text(
+                    'Item Details',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  content: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (imageUrl != null)
+                        Center(
+                          child: Image.network(
+                            imageUrl,
+                            width: 150,
+                            height: 150,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      SizedBox(height: 10),
+                      Text(
+                        'Item Name:',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      Text(itemName, style: TextStyle(fontSize: 16)),
+                      SizedBox(height: 10),
+                      Text(
+                        'Detail:',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      Text(itemDetail, style: TextStyle(fontSize: 16)),
+                      SizedBox(height: 10),
+                      Text(
+                        'Status:',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      Text(itemStatus, style: TextStyle(fontSize: 16)),
+                      SizedBox(height: 10),
+                      Text(
+                        'Uploaded by:',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      Text('$userName ', style: TextStyle(fontSize: 16)),
+                      SizedBox(height: 10),
+                      Text(
+                        'Email:',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      Text('$userEmail', style: TextStyle(fontSize: 16)),
+                      SizedBox(height: 10),
+                      Text(
+                        'Tel:',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      Text('$userTel', style: TextStyle(fontSize: 16)),
+                      SizedBox(height: 10),
+                      Text(
+                        'LineID:',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      Text('$userLineID', style: TextStyle(fontSize: 16)),
+                      SizedBox(height: 10),
+                      Text(
+                        'Upload Time:',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        uploadTime != null
+                            ? DateFormat(' HH:mm dd MMMM yyyy')
+                                .format(uploadTime.toDate())
+                            : '',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      SizedBox(height: 10),
+                    ],
+                  ),
+                  actions: <Widget>[
+                    ElevatedButton(
+                      onPressed: () {
+                        if (itemStatus != 'Waiting for confirmation') {
+                          // Store the UID of the receiver
+                          String receiverUid =
+                              FirebaseAuth.instance.currentUser?.uid ?? '';
+
+                          // Call a function to change the item status and pass the receiver's UID
+                          _changeItemStatus(itemRef, receiverUid);
+
+                          Navigator.of(context).pop();
+                        } else {
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                title: Text(
+                                  'Item Status',
+                                  style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                content: Text(
+                                  'This item is already in "Waiting for confirmation" status.',
+                                ),
+                                actions: <Widget>[
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: Text('Close'),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        }
+                      },
+                      child: Text('Accept'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: Text('Close'),
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+        } else {
+          // Handle the case where user data does not exist.
+          print('User data does not exist.');
+        }
+      }).catchError((error) {
+        // Handle errors when fetching user data.
+        print('Error fetching user data: $error');
+      });
+    }
+  }
+
+  void _changeItemStatus(DocumentReference itemRef, String receiverUid) {
+    // Assuming your Firestore documents have a "status" field and a "receiver_uid" field.
+    // You can update the status and receiver UID as needed.
+    itemRef.update({
+      'status': 'Waiting for confirmation',
+      'receiver_uid': receiverUid,
+      'receive_time': currentTime,
+    }).then((_) {
+      // Item status updated successfully.
+      // You can add any additional logic here if needed.
+    }).catchError((error) {
+      // Handle errors here if the update fails.
+      print('Error updating item status: $error');
+    });
+  }
+
+  DateTime currentTime = DateTime.now();
 }

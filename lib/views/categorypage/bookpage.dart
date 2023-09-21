@@ -9,6 +9,7 @@ import 'package:finalproject/views/categorypage/stationerypage.dart';
 import 'package:finalproject/views/profilepage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class BookPage extends StatefulWidget {
   const BookPage({super.key});
@@ -16,6 +17,8 @@ class BookPage extends StatefulWidget {
   @override
   State<BookPage> createState() => _BookPageState();
 }
+
+DateTime currentTime = DateTime.now();
 
 class _BookPageState extends State<BookPage> {
   @override
@@ -218,7 +221,10 @@ class _BookPageState extends State<BookPage> {
                     .collection('Items')
                     .doc('book')
                     .collection('dataItems')
-                    .snapshots(),
+                    .where('status', whereIn: [
+                  'Waiting for confirmation',
+                  'Available'
+                ]).snapshots(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return Center(
@@ -314,6 +320,8 @@ class _BookPageState extends State<BookPage> {
     String imageUrl = itemData['image_url'];
     String userId = itemData['user_id'];
 
+    Timestamp? uploadTime = itemData['upload_time'] as Timestamp?;
+
     FirebaseAuth auth = FirebaseAuth.instance;
     String? currentUserId = auth.currentUser?.uid;
 
@@ -322,8 +330,10 @@ class _BookPageState extends State<BookPage> {
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text('Item Details',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            title: Text(
+              'Item Details',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
             content: Text('You cannot accept your own item.'),
             actions: <Widget>[
               TextButton(
@@ -343,8 +353,7 @@ class _BookPageState extends State<BookPage> {
           .get()
           .then((userData) {
         if (userData.exists) {
-          String userName =
-              userData['name']; // Replace with the field name for the username.
+          String userName = userData['name'];
           String userEmail = userData['email'];
           String userTel = userData['tel'];
           String userLineID = userData['idline'];
@@ -352,99 +361,139 @@ class _BookPageState extends State<BookPage> {
           showDialog(
             context: context,
             builder: (context) {
-              return AlertDialog(
-                title: Text('Item Details',
-                    style:
-                        TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                content: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (imageUrl != null)
-                      Center(
-                        child: Image.network(
-                          imageUrl,
-                          width: 150,
-                          height: 150,
-                          fit: BoxFit.cover,
+              return SingleChildScrollView(
+                child: AlertDialog(
+                  title: Text(
+                    'Item Details',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  content: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (imageUrl != null)
+                        Center(
+                          child: Image.network(
+                            imageUrl,
+                            width: 150,
+                            height: 150,
+                            fit: BoxFit.cover,
+                          ),
                         ),
+                      SizedBox(height: 10),
+                      Text(
+                        'Item Name:',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
                       ),
-                    SizedBox(height: 10),
-                    Text('Item Name:',
+                      Text(itemName, style: TextStyle(fontSize: 16)),
+                      SizedBox(height: 10),
+                      Text(
+                        'Detail:',
                         style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold)),
-                    Text(itemName, style: TextStyle(fontSize: 16)),
-                    SizedBox(height: 10),
-                    Text('Detail:',
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      Text(itemDetail, style: TextStyle(fontSize: 16)),
+                      SizedBox(height: 10),
+                      Text(
+                        'Status:',
                         style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold)),
-                    Text(itemDetail, style: TextStyle(fontSize: 16)),
-                    SizedBox(height: 10),
-                    Text('Status:',
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      Text(itemStatus, style: TextStyle(fontSize: 16)),
+                      SizedBox(height: 10),
+                      Text(
+                        'Uploaded by:',
                         style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold)),
-                    Text(itemStatus, style: TextStyle(fontSize: 16)),
-                    SizedBox(height: 10),
-                    Text('Uploaded by:',
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      Text('$userName ', style: TextStyle(fontSize: 16)),
+                      SizedBox(height: 10),
+                      Text(
+                        'Email:',
                         style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold)),
-                    Text('$userName ', style: TextStyle(fontSize: 16)),
-                    SizedBox(height: 10),
-                    Text('Email:',
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      Text('$userEmail', style: TextStyle(fontSize: 16)),
+                      SizedBox(height: 10),
+                      Text(
+                        'Tel:',
                         style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold)),
-                    Text('$userEmail', style: TextStyle(fontSize: 16)),
-                    SizedBox(height: 10),
-                    Text('Tel:',
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      Text('$userTel', style: TextStyle(fontSize: 16)),
+                      SizedBox(height: 10),
+                      Text(
+                        'LineID:',
                         style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold)),
-                    Text('$userTel', style: TextStyle(fontSize: 16)),
-                    SizedBox(height: 10),
-                    Text('LineID:',
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      Text('$userLineID', style: TextStyle(fontSize: 16)),
+                      SizedBox(height: 10),
+                      Text(
+                        'Upload Time:',
                         style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold)),
-                    Text('$userLineID', style: TextStyle(fontSize: 16)),
-                  ],
-                ),
-                actions: <Widget>[
-                  ElevatedButton(
-                    onPressed: () {
-                      if (itemStatus != 'Waiting for confirmation') {
-                        _changeItemStatus(itemRef);
-                        Navigator.of(context).pop();
-                      } else {
-                        showDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              title: Text('Item Status',
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        uploadTime != null
+                            ? DateFormat(' HH:mm dd MMMM yyyy')
+                                .format(uploadTime.toDate())
+                            : '',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      SizedBox(height: 10),
+                    ],
+                  ),
+                  actions: <Widget>[
+                    ElevatedButton(
+                      onPressed: () {
+                        if (itemStatus != 'Waiting for confirmation') {
+                          // Store the UID of the receiver
+                          String receiverUid =
+                              FirebaseAuth.instance.currentUser?.uid ?? '';
+
+                          // Call a function to change the item status and pass the receiver's UID
+                          _changeItemStatus(itemRef, receiverUid);
+
+                          Navigator.of(context).pop();
+                        } else {
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                title: Text(
+                                  'Item Status',
                                   style: TextStyle(
                                       fontSize: 20,
-                                      fontWeight: FontWeight.bold)),
-                              content: Text(
-                                  'This item is already in "Waiting for confirmation" status.'),
-                              actions: <Widget>[
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: Text('Close'),
+                                      fontWeight: FontWeight.bold),
                                 ),
-                              ],
-                            );
-                          },
-                        );
-                      }
-                    },
-                    child: Text('Accept'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: Text('Close'),
-                  ),
-                ],
+                                content: Text(
+                                  'This item is already in "Waiting for confirmation" status.',
+                                ),
+                                actions: <Widget>[
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: Text('Close'),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        }
+                      },
+                      child: Text('Accept'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: Text('Close'),
+                    ),
+                  ],
+                ),
               );
             },
           );
@@ -459,10 +508,14 @@ class _BookPageState extends State<BookPage> {
     }
   }
 
-  void _changeItemStatus(DocumentReference itemRef) {
-    // Assuming your Firestore documents have a "status" field.
-    // You can update the status as needed. For example, toggle between "available" and "claimed".
-    itemRef.update({'status': 'Waiting for confirmation'}).then((_) {
+  void _changeItemStatus(DocumentReference itemRef, String receiverUid) {
+    // Assuming your Firestore documents have a "status" field and a "receiver_uid" field.
+    // You can update the status and receiver UID as needed.
+    itemRef.update({
+      'status': 'Waiting for confirmation',
+      'receiver_uid': receiverUid,
+      'receive_time': currentTime,
+    }).then((_) {
       // Item status updated successfully.
       // You can add any additional logic here if needed.
     }).catchError((error) {

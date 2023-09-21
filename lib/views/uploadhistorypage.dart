@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class UploadHistoryPage extends StatefulWidget {
   const UploadHistoryPage({super.key});
@@ -37,7 +38,6 @@ class _UploadHistoryPageState extends State<UploadHistoryPage> {
           ),
         ),
         actions: [
-          // Place the dropdown in the AppBar's actions.
           PopupMenuButton<String>(
             onSelected: (value) {
               setState(() {
@@ -54,9 +54,25 @@ class _UploadHistoryPageState extends State<UploadHistoryPage> {
                   value: 'cloth',
                   child: Text('Cloth'),
                 ),
-                // Add more items for other documents as needed.
+                PopupMenuItem<String>(
+                  value: 'electrical',
+                  child: Text('Electrical'),
+                ),
+                PopupMenuItem<String>(
+                  value: 'ferniture',
+                  child: Text('Ferniture'),
+                ),
+                PopupMenuItem<String>(
+                  value: 'sport',
+                  child: Text('Sport'),
+                ),
+                PopupMenuItem<String>(
+                  value: 'stationery',
+                  child: Text('Stationery'),
+                ),
               ];
             },
+            icon: Icon(Icons.menu_book_rounded),
           ),
         ],
       ),
@@ -87,10 +103,12 @@ class _UploadHistoryPageState extends State<UploadHistoryPage> {
             itemCount: items.length,
             itemBuilder: (context, index) {
               var item = items[index];
+              var itemUid = item['item_uid'];
               var itemName = item['item_name'];
               var itemDescription = item['detail'];
               var imageUrl = item['image_url'];
               var itemStatus = item['status'];
+              var receiveTime = item['receive_time'];
 
               // Define colors based on item status
               Color cardColor = itemStatus == 'Waiting for confirmation'
@@ -127,8 +145,14 @@ class _UploadHistoryPageState extends State<UploadHistoryPage> {
                       children: [
                         ElevatedButton(
                           onPressed: () {
-                            _showItemDetailsDialog(itemName, itemDescription,
-                                imageUrl, itemStatus);
+                            _showItemDetailsDialog(
+                              item['item_uid'],
+                              itemName,
+                              itemDescription,
+                              imageUrl,
+                              itemStatus,
+                              item['receive_time'],
+                            );
                           },
                           style: ButtonStyle(
                             backgroundColor:
@@ -149,7 +173,8 @@ class _UploadHistoryPageState extends State<UploadHistoryPage> {
                         SizedBox(width: 8),
                         ElevatedButton(
                           onPressed: () {
-                            _showDeleteConfirmationDialog(itemName, itemStatus);
+                            _showDeleteConfirmationDialog(
+                                itemUid, itemName, itemStatus);
                           },
                           style: ButtonStyle(
                             backgroundColor:
@@ -187,11 +212,15 @@ class _UploadHistoryPageState extends State<UploadHistoryPage> {
     );
   }
 
-  void _showItemDetailsDialog(String itemName, String itemDescription,
-      String imageUrl, String itemStatus) {
-    // Check if the item status is "Waiting for confirmation" before showing the dialog
+  void _showItemDetailsDialog(
+      String itemUid,
+      String itemName,
+      String itemDescription,
+      String imageUrl,
+      String itemStatus,
+      dynamic receiveTime) {
+    // Check if the item status is not "Waiting for confirmation"
     if (itemStatus != "Waiting for confirmation") {
-      // Show a snackbar message instead of opening the dialog
       final snackBar = SnackBar(
         content: Text('Cannot confirm item with status: $itemStatus'),
       );
@@ -199,73 +228,119 @@ class _UploadHistoryPageState extends State<UploadHistoryPage> {
       return;
     }
 
+    // Check if the receiveTime field exists and is a Timestamp
+    if (receiveTime is! Timestamp) {
+      final snackBar = SnackBar(
+        content: Text('Invalid receiveTime data'),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      return;
+    }
+
+    final formattedReceiveTime =
+        DateFormat(' HH:mm dd MMMM yyyy').format(receiveTime.toDate());
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  itemName,
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 10),
-                if (imageUrl != null)
-                  Image.network(
-                    imageUrl,
-                    width: 200,
-                    height: 200,
-                    fit: BoxFit.cover,
-                  ),
-                SizedBox(height: 10),
-                Text(
-                  "Description:",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(itemDescription),
-                SizedBox(height: 10),
-                Text(
-                  "Status:",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(itemStatus),
-                SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: Text('Close'),
+        return SingleChildScrollView(
+          child: Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    itemName,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
                     ),
-                    if (itemStatus == "Waiting for confirmation")
+                  ),
+                  SizedBox(height: 10),
+                  if (imageUrl != null)
+                    Image.network(
+                      imageUrl,
+                      width: 200,
+                      height: 200,
+                      fit: BoxFit.cover,
+                    ),
+                  SizedBox(height: 10),
+                  Text(
+                    "Item UID:",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(itemUid), // Display item UID
+                  SizedBox(height: 10),
+                  Text(
+                    "Detail:",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(itemDescription),
+                  SizedBox(height: 10),
+                  Text(
+                    "Status:",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(itemStatus),
+                  SizedBox(height: 10),
+
+                  Text(
+                    "Received Time:",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(formattedReceiveTime), // Display formatted receive time
+                  SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
+                          _resetItemStatus(
+                              itemUid); // Call a function to reset the item status
+                          Navigator.of(context).pop();
+                        },
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all(
+                              Colors.blue), // Change the button color
+                          foregroundColor:
+                              MaterialStateProperty.all(Colors.white),
+                        ),
+                        child: Text('Re-Post'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: Text('Close'),
+                      ),
                       ElevatedButton(
                         onPressed: () {
                           _confirmItem(
-                              itemName); // Call a function to confirm the item
+                              itemUid); // Call a function to confirm the item
                           Navigator.of(context).pop();
                         },
                         child: Text('Confirm'),
                       ),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -273,20 +348,33 @@ class _UploadHistoryPageState extends State<UploadHistoryPage> {
     );
   }
 
-  Future<void> _confirmItem(String itemName) async {
+// Function to reset item status
+  void _resetItemStatus(String itemUid) {
+    try {
+      _firestore
+          .collection('Items')
+          .doc(selectedDocument)
+          .collection('dataItems')
+          .doc(itemUid) // Use itemUid to uniquely identify the document
+          .update({
+        'status': 'Available',
+        'receiver_uid': FieldValue.delete(),
+        'receive_time': '',
+      });
+    } catch (e) {
+      // Handle any errors that occur
+      print('Error resetting item status: $e');
+    }
+  }
+
+  Future<void> _confirmItem(String itemUid) async {
     try {
       await _firestore
           .collection('Items')
-          .doc('book')
+          .doc(selectedDocument)
           .collection('dataItems')
-          .where('item_name', isEqualTo: itemName)
-          .get()
-          .then((querySnapshot) {
-        querySnapshot.docs.forEach((doc) {
-          doc.reference.update(
-              {'status': 'Confirmed'}); // Update the status to 'Confirmed'
-        });
-      });
+          .doc(itemUid) // Use itemUid to uniquely identify the document
+          .update({'status': 'Confirmed'});
     } catch (e) {
       // Handle any errors that occur
       print('Error confirming item: $e');
@@ -294,7 +382,7 @@ class _UploadHistoryPageState extends State<UploadHistoryPage> {
   }
 
   Future<void> _showDeleteConfirmationDialog(
-      String itemName, String itemStatus) async {
+      String itemUid, String itemName, String itemStatus) async {
     return showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -310,7 +398,7 @@ class _UploadHistoryPageState extends State<UploadHistoryPage> {
             ),
             ElevatedButton(
               onPressed: () {
-                _deleteItem(itemName);
+                _deleteItem(itemUid, itemName);
 
                 Navigator.of(context).pop();
               },
@@ -333,23 +421,16 @@ class _UploadHistoryPageState extends State<UploadHistoryPage> {
     );
   }
 
-  Future<void> _deleteItem(String itemName) async {
+  Future<void> _deleteItem(String itemUid, String itemName) async {
     try {
       await _firestore
           .collection('Items')
-          .doc('book')
+          .doc(selectedDocument)
           .collection('dataItems')
-          .where('item_name', isEqualTo: itemName)
-          .get()
-          .then((querySnapshot) {
-        querySnapshot.docs.forEach((doc) {
-          doc.reference.delete();
-        });
-      });
-
-      // หรือใช้เงื่อนไขอื่น ๆ ที่เหมาะสมกับโครงสร้างของคุณ
+          .doc(itemUid) // Use itemUid to uniquely identify the document
+          .delete();
     } catch (e) {
-      // จัดการข้อผิดพลาด (error) ถ้ามี
+      // Handle any errors that occur
       print('Error deleting item: $e');
     }
   }

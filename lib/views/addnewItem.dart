@@ -21,7 +21,7 @@ class _AddMoreNewItemState extends State<AddMoreNewItem> {
   String? selectedDocument;
   String? _imageUrl;
   File? _image;
-
+  DateTime currentTime = DateTime.now();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -209,12 +209,16 @@ class _AddMoreNewItemState extends State<AddMoreNewItem> {
             .collection('dataItems')
             .doc();
 
+        String itemUid = documentReference.id;
         Map<String, dynamic> data = {
           'item_name': _itemname.text,
           'detail': _detail.text,
           'image_url': _imageUrl,
-          'status': "available",
+          'status': "Available",
           'user_id': user.uid,
+          'upload_time': currentTime,
+          'item_uid': itemUid,
+          'receive_time': ''
         };
 
         try {
