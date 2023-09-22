@@ -1,3 +1,4 @@
+import 'package:finalproject/services/admin/adminpage.dart';
 import 'package:finalproject/services/auth_service.dart';
 import 'package:finalproject/views/category.dart';
 import 'package:finalproject/views/homepage.dart';
@@ -47,6 +48,7 @@ class _LoginPageState extends State<LoginPage> {
                           height: 10,
                         ),
                         buildEmailSignin(),
+                        buildForgotPasswordButton(),
                         buildEmailSignup(),
                       ],
                     )),
@@ -78,24 +80,40 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget buildEmailSignin() {
     return ElevatedButton(
-        style: ButtonStyle(
-          backgroundColor: MaterialStatePropertyAll(Colors.blue[900]),
-          foregroundColor: const MaterialStatePropertyAll(Colors.white),
-        ),
-        onPressed: () {
-          if (_formKey.currentState!.validate()) {
-            AuthService.loginUser(_email.text, _password.text).then((value) {
-              if (value == 1) {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const CategoriesPage()),
-                );
-              }
-            });
-          }
-        },
-        child: const Text("Sing in"));
+      style: ButtonStyle(
+        backgroundColor: MaterialStatePropertyAll(Colors.blue[900]),
+        foregroundColor: const MaterialStatePropertyAll(Colors.white),
+      ),
+      onPressed: () {
+        if (_formKey.currentState!.validate()) {
+          AuthService.loginUser(_email.text, _password.text).then((value) {
+            if (value == 1) {
+              _resetForm();
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const CategoriesPage(),
+                ),
+              );
+            } else if (value == 3) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AdminPage(),
+                ),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Login failed'),
+                ),
+              );
+            }
+          });
+        }
+      },
+      child: const Text("Sing in"),
+    );
   }
 
   TextFormField buildEmailInput() {
@@ -126,4 +144,48 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
+
+  Widget buildForgotPasswordButton() {
+    return TextButton(
+      onPressed: () {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text("Forgot Password"),
+              content: Text("Enter your email to reset your password."),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () async {
+                    try {
+                      await AuthService().sendPasswordResetEmail(_email.text);
+                      Navigator.of(context).pop();
+                      // Show a success message or navigate to a confirmation page.
+                      // You can customize this behavior based on your app's design.
+                    } catch (e) {
+                      // Handle the error, e.g., show an error message to the user.
+                      print("Password reset failed: $e");
+                    }
+                  },
+                  child: Text("Reset Password"),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text("Cancel"),
+                ),
+              ],
+            );
+          },
+        );
+      },
+      child: Text("Forgot Password?"),
+    );
+  }
+}
+
+void _resetForm() {
+  _email.clear();
+  _password.clear();
 }

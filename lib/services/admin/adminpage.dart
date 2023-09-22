@@ -1,36 +1,37 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:finalproject/views/loginpage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-class UploadHistoryPage extends StatefulWidget {
-  const UploadHistoryPage({super.key});
+class AdminPage extends StatefulWidget {
+  const AdminPage({super.key});
 
   @override
-  State<UploadHistoryPage> createState() => _UploadHistoryPageState();
+  State<AdminPage> createState() => _AdminPageState();
 }
 
-class _UploadHistoryPageState extends State<UploadHistoryPage> {
+class _AdminPageState extends State<AdminPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   FirebaseAuth auth = FirebaseAuth.instance;
-  String? currentUserId;
+
   String selectedDocument = 'book';
 
   @override
   void initState() {
     super.initState();
-    currentUserId = auth.currentUser?.uid;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
         title: Text(
-          "History",
+          "Admin Page",
           style: TextStyle(
             fontSize: 16.0,
             fontWeight: FontWeight.normal,
@@ -74,6 +75,12 @@ class _UploadHistoryPageState extends State<UploadHistoryPage> {
             },
             icon: Icon(Icons.menu_book_rounded),
           ),
+          IconButton(
+            icon: Icon(Icons.logout), // Add a logout icon
+            onPressed: () {
+              _handleLogout(); // Call the logout function when pressed
+            },
+          ),
         ],
       ),
       body: StreamBuilder(
@@ -81,7 +88,6 @@ class _UploadHistoryPageState extends State<UploadHistoryPage> {
             .collection('Items')
             .doc(selectedDocument) // Use selected document here.
             .collection('dataItems')
-            .where('user_id', isEqualTo: currentUserId)
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -165,7 +171,7 @@ class _UploadHistoryPageState extends State<UploadHistoryPage> {
                                 Size(80, 30)), // Adjust button minimum size
                           ),
                           child: Text(
-                            "Given",
+                            "Detail",
                             style: TextStyle(
                                 fontSize: 12), // Adjust button text size
                           ),
@@ -213,33 +219,20 @@ class _UploadHistoryPageState extends State<UploadHistoryPage> {
   }
 
   void _showItemDetailsDialog(
-      String itemUid,
-      String itemName,
-      String itemDescription,
-      String imageUrl,
-      String itemStatus,
-      dynamic receiveTime) {
-    // Check if the item status is not "Waiting for confirmation"
-    if (itemStatus != "Waiting for confirmation") {
-      final snackBar = SnackBar(
-        content: Text('Cannot confirm item with status: $itemStatus'),
-      );
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-      return;
+    String itemUid,
+    String itemName,
+    String itemDescription,
+    String imageUrl,
+    String itemStatus,
+    dynamic receiveTime,
+  ) {
+    String formattedReceiveTime = 'Have not received it yet.';
+
+    // Check if receiveTime is not null and is an instance of Timestamp
+    if (receiveTime != null && receiveTime is Timestamp) {
+      formattedReceiveTime =
+          DateFormat(' HH:mm dd MMMM yyyy').format(receiveTime.toDate());
     }
-
-    // Check if the receiveTime field exists and is a Timestamp
-    if (receiveTime is! Timestamp) {
-      final snackBar = SnackBar(
-        content: Text('Invalid receiveTime data'),
-      );
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-      return;
-    }
-
-    final formattedReceiveTime =
-        DateFormat(' HH:mm dd MMMM yyyy').format(receiveTime.toDate());
-
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -438,6 +431,19 @@ class _UploadHistoryPageState extends State<UploadHistoryPage> {
     } catch (e) {
       // Handle any errors that occur
       print('Error deleting item: $e');
+    }
+  }
+
+  Future<void> _handleLogout() async {
+    try {
+      await auth.signOut();
+      // Navigate to the login or home screen after logout (you can customize this part)
+      Navigator.of(context).pushReplacement(MaterialPageRoute(
+        builder: (context) => LoginPage(),
+      ));
+    } catch (e) {
+      // Handle any errors that occur during logout
+      print('Error during logout: $e');
     }
   }
 }

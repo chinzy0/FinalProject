@@ -157,10 +157,14 @@ class _RegisterPageState extends State<RegisterPage> {
         ),
         onPressed: () {
           if (_formKey.currentState!.validate()) {
-            AuthService()
-                .signUpWithEmail(_email.text, _password.text, _name.text,
-                    _tel.text, _idline.text)
-                .then((value) => Navigator.pop(context));
+            AuthService().signUpWithEmail(
+              _email.text,
+              _password.text,
+              _name.text,
+              _tel.text,
+              _idline.text,
+              context,
+            );
           }
         },
         child: const Text("ยืนยัน"));
