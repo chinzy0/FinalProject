@@ -1,10 +1,17 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class AuthService {
-  Future<void> signUpWithEmail(String email, String password, String name,
-      String tel, String idline, BuildContext context) async {
+  Future<void> signUpWithEmail(
+      String email,
+      String password,
+      String name,
+      String tel,
+      String idline,
+      String selectedCategory,
+      BuildContext context) async {
     try {
       // Create New User Account to Firebase Authen
       final credential =
@@ -22,6 +29,7 @@ class AuthService {
         "name": name,
         "tel": tel,
         "idline": idline,
+        'category': selectedCategory,
       });
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {

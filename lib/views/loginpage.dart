@@ -1,6 +1,7 @@
 import 'package:finalproject/services/admin/adminpage.dart';
 import 'package:finalproject/services/auth_service.dart';
 import 'package:finalproject/views/category.dart';
+
 import 'package:finalproject/views/homepage.dart';
 import 'package:finalproject/views/registerpage.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +16,7 @@ class LoginPage extends StatefulWidget {
 final _email = TextEditingController();
 final _password = TextEditingController();
 final _formKey = GlobalKey<FormState>();
+bool _isPasswordVisible = false;
 
 class _LoginPageState extends State<LoginPage> {
   @override
@@ -92,7 +94,7 @@ class _LoginPageState extends State<LoginPage> {
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const CategoriesPage(),
+                  builder: (context) => CategoriesPage(),
                 ),
               );
             } else if (value == 3) {
@@ -132,15 +134,26 @@ class _LoginPageState extends State<LoginPage> {
   TextFormField buildPasswordInput() {
     return TextFormField(
       controller: _password,
-      obscureText: true,
+      obscureText: !_isPasswordVisible,
       validator: (value) {
         if (value!.isEmpty) {
           return "Please enter Password";
         }
         return null;
       },
-      decoration: const InputDecoration(
+      decoration: InputDecoration(
         labelText: "Password",
+        suffixIcon: GestureDetector(
+          onTap: () {
+            setState(() {
+              _isPasswordVisible = !_isPasswordVisible;
+            });
+          },
+          child: Icon(
+            _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+            color: Colors.grey,
+          ),
+        ),
       ),
     );
   }
@@ -148,44 +161,52 @@ class _LoginPageState extends State<LoginPage> {
   Widget buildForgotPasswordButton() {
     return TextButton(
       onPressed: () {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: Text("Forgot Password"),
-              content: Text("Enter your email to reset your password."),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () async {
-                    try {
-                      await AuthService().sendPasswordResetEmail(_email.text);
+        if (_email.text.isNotEmpty) {
+          // ตรวจสอบว่าช่องอีเมลไม่ว่างเปล่า
+          showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: Text("Forgot Password"),
+                content: Text("Enter your email to reset your password."),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () async {
+                      try {
+                        await AuthService().sendPasswordResetEmail(_email.text);
+                        Navigator.of(context).pop();
+                      } catch (e) {
+                        // Handle the error, e.g., show an error message to the user.
+                        print("Password reset failed: $e");
+                      }
+                    },
+                    child: Text("Reset Password"),
+                  ),
+                  TextButton(
+                    onPressed: () {
                       Navigator.of(context).pop();
-                      // Show a success message or navigate to a confirmation page.
-                      // You can customize this behavior based on your app's design.
-                    } catch (e) {
-                      // Handle the error, e.g., show an error message to the user.
-                      print("Password reset failed: $e");
-                    }
-                  },
-                  child: Text("Reset Password"),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Text("Cancel"),
-                ),
-              ],
-            );
-          },
-        );
+                    },
+                    child: Text("Cancel"),
+                  ),
+                ],
+              );
+            },
+          );
+        } else {
+          // แสดงข้อความของคุณเมื่อช่องอีเมลว่างเปล่า
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Please enter your email to reset the password.'),
+            ),
+          );
+        }
       },
       child: Text("Forgot Password?"),
     );
   }
-}
 
-void _resetForm() {
-  _email.clear();
-  _password.clear();
+  void _resetForm() {
+    _email.clear();
+    _password.clear();
+  }
 }

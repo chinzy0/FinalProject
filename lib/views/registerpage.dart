@@ -14,6 +14,15 @@ final TextEditingController _password = TextEditingController();
 final TextEditingController _name = TextEditingController();
 final TextEditingController _tel = TextEditingController();
 final TextEditingController _idline = TextEditingController();
+List<String> categories = [
+  'book',
+  'clothes',
+  'electrical',
+  'furniture',
+  'sport',
+  'stationery',
+];
+String selectedCategory = categories[0];
 
 class _RegisterPageState extends State<RegisterPage> {
   @override
@@ -31,7 +40,6 @@ class _RegisterPageState extends State<RegisterPage> {
       ),
       body: SafeArea(
           child: Container(
-        height: 450,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
@@ -49,6 +57,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 buildNameInput(),
                 buildTelInput(),
                 buildIdlineInput(),
+                buildCategoryDropdown(),
                 SizedBox(
                   height: 20,
                 ),
@@ -67,12 +76,12 @@ class _RegisterPageState extends State<RegisterPage> {
       keyboardType: TextInputType.phone,
       decoration: const InputDecoration(
         icon: const Icon(Icons.phone),
-        hintText: 'เบอร์โทรศัพท์',
-        labelText: 'เบอร์โทรศัพท์',
+        hintText: 'Tel',
+        labelText: 'Tel',
       ),
       validator: (value) {
         if (value!.isEmpty) {
-          return 'กรุณากรอกข้อมูลให้ครบ';
+          return 'Please fill in complete information.';
         }
         return null;
       },
@@ -84,12 +93,12 @@ class _RegisterPageState extends State<RegisterPage> {
       controller: _name,
       decoration: const InputDecoration(
         icon: const Icon(Icons.person),
-        hintText: 'ชื่อ',
-        labelText: 'ชื่อ',
+        hintText: 'Name',
+        labelText: 'Name',
       ),
       validator: (value) {
         if (value!.isEmpty) {
-          return 'กรุณากรอกข้อมูลให้ครบ';
+          return 'Please fill in complete information.';
         }
         return null;
       },
@@ -101,12 +110,12 @@ class _RegisterPageState extends State<RegisterPage> {
       controller: _idline,
       decoration: const InputDecoration(
         icon: const Icon(Icons.contacts),
-        hintText: 'ไอดีไลน์',
-        labelText: 'ไอดีไลน์',
+        hintText: 'Line ID',
+        labelText: 'Line ID',
       ),
       validator: (value) {
         if (value!.isEmpty) {
-          return 'กรุณากรอกข้อมูลให้ครบ';
+          return 'Please fill in complete information.';
         }
         return null;
       },
@@ -124,7 +133,7 @@ class _RegisterPageState extends State<RegisterPage> {
       ),
       validator: (value) {
         if (value!.isEmpty) {
-          return 'กรุณากรอกข้อมูลให้ครบ';
+          return 'Please fill in complete information.';
         }
         return null;
       },
@@ -142,31 +151,67 @@ class _RegisterPageState extends State<RegisterPage> {
       ),
       validator: (value) {
         if (value!.isEmpty) {
-          return 'กรุณากรอกข้อมูลให้ครบ';
+          return 'Please fill in complete information.';
         }
         return null;
       },
     );
   }
 
+  Widget buildCategoryDropdown() {
+    return DropdownButtonFormField(
+      value: selectedCategory,
+      items: categories.map((category) {
+        return DropdownMenuItem(
+          value: category,
+          child: Text(category),
+        );
+      }).toList(),
+      onChanged: (newValue) {
+        setState(() {
+          selectedCategory = newValue.toString();
+        });
+      },
+      decoration: const InputDecoration(
+        icon: const Icon(Icons.favorite),
+        labelText: 'Select the category of interest.',
+      ),
+    );
+  }
+
   Widget buildSummitregister() {
     return ElevatedButton(
-        style: ButtonStyle(
-          backgroundColor: MaterialStatePropertyAll(Colors.blue[900]),
-          foregroundColor: const MaterialStatePropertyAll(Colors.white),
-        ),
-        onPressed: () {
-          if (_formKey.currentState!.validate()) {
-            AuthService().signUpWithEmail(
-              _email.text,
-              _password.text,
-              _name.text,
-              _tel.text,
-              _idline.text,
-              context,
-            );
-          }
-        },
-        child: const Text("ยืนยัน"));
+      style: ButtonStyle(
+        backgroundColor: MaterialStatePropertyAll(Colors.blue[900]),
+        foregroundColor: const MaterialStatePropertyAll(Colors.white),
+      ),
+      onPressed: () {
+        if (_formKey.currentState!.validate()) {
+          AuthService().signUpWithEmail(
+            _email.text,
+            _password.text,
+            _name.text,
+            _tel.text,
+            _idline.text,
+            selectedCategory,
+            context,
+          );
+        }
+        _navigateToLoginPageAndResetForm();
+      },
+      child: const Text("Submit"),
+    );
+  }
+
+  void _navigateToLoginPageAndResetForm() {
+    // Navigate back to the login page.
+    Navigator.pop(context);
+
+    // Reset the form fields by clearing the text controllers.
+    _email.clear();
+    _password.clear();
+    _name.clear();
+    _tel.clear();
+    _idline.clear();
   }
 }

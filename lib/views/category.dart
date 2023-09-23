@@ -5,6 +5,7 @@ import 'package:finalproject/views/categorypage/electricalpage.dart';
 import 'package:finalproject/views/categorypage/ferniturepage.dart';
 import 'package:finalproject/views/categorypage/sportpage.dart';
 import 'package:finalproject/views/categorypage/stationerypage.dart';
+import 'package:finalproject/views/interest.dart';
 import 'package:finalproject/views/profilepage.dart';
 import 'package:finalproject/views/uploadhistorypage.dart';
 import 'package:flutter/material.dart';
@@ -31,6 +32,19 @@ class _CategoriesPageState extends State<CategoriesPage> {
         actions: <Widget>[
           IconButton(
             icon: Icon(
+              Icons.favorite_border_rounded,
+              color: Colors.white,
+            ), // ไอคอนที่คุณต้องการเพิ่ม
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => InterestingPage(),
+                ),
+              );
+            },
+          ),
+          IconButton(
+            icon: Icon(
               Icons.history_rounded,
               color: Colors.white,
             ), // ไอคอนที่คุณต้องการเพิ่ม
@@ -43,8 +57,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
             },
           ),
         ],
-      ), // ใช้ AppBar ที่เราสร้าง
-
+      ),
       backgroundColor: Colors.white,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
