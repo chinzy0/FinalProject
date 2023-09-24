@@ -82,6 +82,8 @@ class _RegisterPageState extends State<RegisterPage> {
       validator: (value) {
         if (value!.isEmpty) {
           return 'Please fill in complete information.';
+        } else if (value.length != 10) {
+          return 'Phone number must have exactly 10 digits.';
         }
         return null;
       },
@@ -196,22 +198,16 @@ class _RegisterPageState extends State<RegisterPage> {
             selectedCategory,
             context,
           );
+          Navigator.pop(context);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Please correct the errors in the form.'),
+            ),
+          );
         }
-        _navigateToLoginPageAndResetForm();
       },
       child: const Text("Submit"),
     );
-  }
-
-  void _navigateToLoginPageAndResetForm() {
-    // Navigate back to the login page.
-    Navigator.pop(context);
-
-    // Reset the form fields by clearing the text controllers.
-    _email.clear();
-    _password.clear();
-    _name.clear();
-    _tel.clear();
-    _idline.clear();
   }
 }
