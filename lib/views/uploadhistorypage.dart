@@ -110,9 +110,6 @@ class _UploadHistoryPageState extends State<UploadHistoryPage> {
               var itemStatus = item['status'];
               var receiveTime = item['receive_time'];
 
-// ตัดชื่อสิ่งของและรายละเอียดให้มีความยาวไม่เกิน 7 ตัวอักษร
-              var shortenedItemName = itemName.substring(0, 7);
-              var shortenedItemDescription = itemDescription.substring(0, 7);
               // Define colors based on item status
               Color cardColor = itemStatus == 'Waiting for confirmation'
                   ? Colors.yellow
@@ -122,17 +119,17 @@ class _UploadHistoryPageState extends State<UploadHistoryPage> {
 
               return SizedBox(
                 // Set the desired width
-                height: 80, // Set the desired height
+
                 child: Card(
                   elevation: 2,
                   color: cardColor,
                   child: ListTile(
                     title: Text(
-                      shortenedItemName,
+                      itemName,
                       style: TextStyle(color: Colors.black),
                     ),
                     subtitle: Text(
-                      shortenedItemDescription,
+                      itemDescription,
                       style: TextStyle(color: Colors.black),
                     ),
                     leading: imageUrl != null
