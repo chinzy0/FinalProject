@@ -124,8 +124,6 @@ class _AdminPageState extends State<AdminPage> {
                       : Colors.white; // Default card color
 
               return SizedBox(
-                // Set the desired width
-                height: 80, // Set the desired height
                 child: Card(
                   elevation: 2,
                   color: cardColor,

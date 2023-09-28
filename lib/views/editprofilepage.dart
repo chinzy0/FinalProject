@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:finalproject/views/registerpage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -12,18 +13,49 @@ class EditProfilePage extends StatefulWidget {
 }
 
 class _EditProfilePageState extends State<EditProfilePage> {
+  final _formKey = GlobalKey<FormState>();
   TextEditingController _nameController = TextEditingController();
-
   TextEditingController _telController = TextEditingController();
   TextEditingController _idlineController = TextEditingController();
+  String? _selectedCategory;
 
   @override
   void initState() {
     super.initState();
     _nameController.text = widget.userData['name'] ?? '';
-
     _telController.text = widget.userData['tel'] ?? '';
     _idlineController.text = widget.userData['idline'] ?? '';
+    _loadCurrentCategory();
+  }
+
+  Future<String?> _fetchCurrentCategory() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      return null;
+    }
+    final uid = currentUser.uid;
+    final userDocRef = FirebaseFirestore.instance.collection('Users').doc(uid);
+
+    try {
+      final userData = await userDocRef.get();
+      if (userData.exists) {
+        final category = userData.data()?['category'] as String?;
+        return category;
+      }
+    } catch (error) {
+      print('Error fetching category data: $error');
+    }
+
+    return null; // If no data found or error occurs
+  }
+
+  void _loadCurrentCategory() async {
+    final currentCategory = await _fetchCurrentCategory();
+    if (currentCategory != null) {
+      setState(() {
+        _selectedCategory = currentCategory;
+      });
+    }
   }
 
   @override
@@ -51,38 +83,38 @@ class _EditProfilePageState extends State<EditProfilePage> {
         margin: EdgeInsets.all(20),
         padding: EdgeInsets.all(30),
         child: Form(
+          key: _formKey,
           child: SizedBox(
             child: ListView(
               children: [
-                TextField(
-                  controller: _nameController,
-                  decoration: InputDecoration(labelText: 'Name'),
+                buildNameInput(),
+                buildTelInput(),
+                buildIdlineInput(),
+                SizedBox(
+                  height: 20,
                 ),
-                TextField(
-                  controller: _telController,
-                  decoration: InputDecoration(labelText: 'Telephone'),
-                ),
-                TextField(
-                  controller: _idlineController,
-                  decoration: InputDecoration(labelText: 'Line ID'),
-                ),
+                buildCategoryDropdown(),
                 SizedBox(
                   height: 20,
                 ),
                 ElevatedButton(
                   style: ButtonStyle(
-                    backgroundColor: MaterialStatePropertyAll(Colors.blue[900]),
-                    foregroundColor:
-                        const MaterialStatePropertyAll(Colors.white),
+                    backgroundColor:
+                        MaterialStateProperty.all(Colors.blue[900]),
+                    foregroundColor: MaterialStateProperty.all(Colors.white),
                   ),
                   onPressed: () {
-                    _updateProfile();
-                    // Return the updated user data to the previous page
-                    Navigator.pop(context, {
-                      'name': _nameController.text,
-                      'tel': _telController.text,
-                      'idline': _idlineController.text,
-                    });
+                    if (_formKey.currentState!.validate()) {
+                      // ตรวจสอบความถูกต้องของฟอร์ม
+                      _updateProfile();
+                      // Return the updated user data to the previous page
+                      Navigator.pop(context, {
+                        'name': _nameController.text,
+                        'tel': _telController.text,
+                        'idline': _idlineController.text,
+                        'category': _selectedCategory,
+                      });
+                    }
                   },
                   child: Text('Save Changes'),
                 ),
@@ -99,34 +131,107 @@ class _EditProfilePageState extends State<EditProfilePage> {
     String tel = _telController.text;
     String idline = _idlineController.text;
 
-    // Get the current user's UID
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) {
-      // Handle the case where the user is not authenticated
       return;
     }
     final uid = currentUser.uid;
-
-    // Reference to the Firestore document of the current user
     final userDocRef = FirebaseFirestore.instance.collection('Users').doc(uid);
 
-    // Create a map with the fields you want to update
     Map<String, dynamic> updatedData = {
       'name': name,
       'tel': tel,
       'idline': idline,
     };
 
+    if (_selectedCategory != null) {
+      updatedData['category'] = _selectedCategory;
+    }
+
     try {
-      // Update the user's data in Firestore directly
       await userDocRef.update(updatedData);
-      // Data updated successfully, you can show a message or perform any additional actions
       print('User data updated successfully');
     } catch (error) {
-      // Handle errors, e.g., show an error message
       print('Error updating user data: $error');
-      // You can also check the specific error code to determine the issue
-      // For example, if the error code is 'not-found', it means the document doesn't exist.
     }
+  }
+
+  Widget buildCategoryDropdown() {
+    return DropdownButtonFormField<String>(
+      decoration: InputDecoration(labelText: 'Category'),
+      value: _selectedCategory,
+      items: [
+        'book',
+        'cloth',
+        'electrical',
+        'furniture',
+        'sport',
+        'stationery',
+      ].map((category) {
+        return DropdownMenuItem<String>(
+          value: category,
+          child: Text(category),
+        );
+      }).toList(),
+      onChanged: (value) {
+        setState(() {
+          _selectedCategory = value;
+        });
+      },
+    );
+  }
+
+  Widget buildIdlineInput() {
+    return TextFormField(
+      controller: _idlineController,
+      decoration: const InputDecoration(
+        icon: const Icon(Icons.contacts),
+        hintText: 'Line ID',
+        labelText: 'Line ID',
+      ),
+      validator: (value) {
+        if (value!.isEmpty) {
+          return 'Please fill in complete information.';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget buildTelInput() {
+    return TextFormField(
+      controller: _telController,
+      keyboardType: TextInputType.phone,
+      decoration: const InputDecoration(
+        icon: const Icon(Icons.phone),
+        hintText: 'Tel',
+        labelText: 'Tel',
+      ),
+      validator: (value) {
+        if (value!.isEmpty) {
+          return 'Please fill in complete information.';
+        } else if (value.length != 10) {
+          return 'Phone number must have exactly 10 digits.';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget buildNameInput() {
+    return TextFormField(
+      controller: _nameController,
+      decoration: const InputDecoration(
+        icon: const Icon(Icons.person),
+        hintText: 'Name',
+        labelText: 'Name',
+      ),
+      validator: (value) {
+        if (value!.isEmpty) {
+          return 'Please fill in complete information.';
+        }
+        return null;
+      },
+    );
   }
 }

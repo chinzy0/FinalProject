@@ -73,6 +73,8 @@ class _ProfilePageState extends State<ProfilePage> {
                       _buildUserDataItem('Name:', userData['name'] ?? ''),
                       _buildUserDataItem('Telephone:', userData['tel'] ?? ''),
                       _buildUserDataItem('Line ID:', userData['idline'] ?? ''),
+                      _buildUserDataItem(
+                          'Interests', userData['category'] ?? ''),
                     ],
                   )
                 else
