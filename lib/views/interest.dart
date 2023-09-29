@@ -86,10 +86,8 @@ class _InterestingPageState extends State<InterestingPage> {
                       child: StreamBuilder(
                         stream: FirebaseFirestore.instance
                             .collection('Items')
-                            .doc(
-                                currentUserCategory) // Assuming currentUserCategory is the document ID
-                            .collection(
-                                'dataItems') // Assuming dataItems is the subcollection within the document
+                            .doc(currentUserCategory)
+                            .collection('dataItems')
                             .where('status', whereIn: [
                           'Waiting for confirmation',
                           'Available'

@@ -1,6 +1,8 @@
 import 'package:finalproject/services/auth_service.dart';
 import 'package:finalproject/views/editprofilepage.dart';
 import 'package:finalproject/views/loginpage.dart';
+import 'package:finalproject/views/receivehistory.dart';
+import 'package:finalproject/views/uploadhistorypage.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -61,7 +63,7 @@ class _ProfilePageState extends State<ProfilePage> {
             padding: const EdgeInsets.all(20),
             child: Column(
               children: [
-                const SizedBox(height: 30),
+                const SizedBox(height: 10),
                 CircleAvatar(
                   radius: 70,
                   backgroundImage: Image.asset('assets/images/user.jpg').image,
@@ -79,7 +81,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   )
                 else
                   Text('Loading user data...'),
-                SizedBox(height: 80),
+                SizedBox(height: 10),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -98,11 +100,67 @@ class _ProfilePageState extends State<ProfilePage> {
                 SizedBox(
                   height: 20,
                 ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 15.0, right: 7.5),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => UploadHistoryPage(),
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            primary: Colors.blue,
+                            onPrimary: Colors.white,
+                            padding: const EdgeInsets.all(15),
+                            shape: RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.circular(10), // รูปร่าง
+                            ),
+                          ),
+                          child: Text('Upload history',
+                              style: TextStyle(fontSize: 16)),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 7.5, right: 15.0),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => ReceivedHistorypage(),
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            primary: Colors.green,
+                            onPrimary: Colors.white,
+                            padding: const EdgeInsets.all(15),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: Text('Received history',
+                              style: TextStyle(fontSize: 16)),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  height: 40,
+                ),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      // เรียกใช้งานฟังก์ชัน signOut เมื่อปุ่ม Sign Out ถูกคลิก
                       _signOut();
                     },
                     style: ElevatedButton.styleFrom(

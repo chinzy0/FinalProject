@@ -169,7 +169,7 @@ class _AdminPageState extends State<AdminPage> {
                                 Size(80, 30)), // Adjust button minimum size
                           ),
                           child: Text(
-                            "Detail",
+                            "Manage",
                             style: TextStyle(
                                 fontSize: 12), // Adjust button text size
                           ),
@@ -185,21 +185,18 @@ class _AdminPageState extends State<AdminPage> {
                                 MaterialStateProperty.all(Colors.red),
                             foregroundColor:
                                 MaterialStateProperty.all(Colors.white),
-                            padding: MaterialStateProperty.all(
-                                EdgeInsets.all(8.0)), // Adjust button padding
-                            minimumSize: MaterialStateProperty.all(
-                                Size(80, 30)), // Adjust button minimum size
+                            padding:
+                                MaterialStateProperty.all(EdgeInsets.all(8.0)),
+                            minimumSize:
+                                MaterialStateProperty.all(Size(80, 30)),
                           ),
                           child: Row(
                             children: [
-                              Icon(Icons.delete, size: 18), // Adjust icon size
-                              SizedBox(
-                                  width:
-                                      4), // Add spacing between icon and text
+                              Icon(Icons.delete, size: 18),
+                              SizedBox(width: 4),
                               Text(
                                 'Delete',
-                                style: TextStyle(
-                                    fontSize: 12), // Adjust button text size
+                                style: TextStyle(fontSize: 12),
                               ),
                             ],
                           ),
@@ -314,12 +311,6 @@ class _AdminPageState extends State<AdminPage> {
                         ),
                         child: Text('Re-Post'),
                       ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: Text('Close'),
-                      ),
                       ElevatedButton(
                         onPressed: () {
                           _confirmItem(
@@ -333,6 +324,28 @@ class _AdminPageState extends State<AdminPage> {
                           foregroundColor:
                               MaterialStateProperty.all(Colors.white),
                         ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  ElevatedButton(
+                    onPressed: () {},
+                    child: Text('Manage category'),
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(Colors.orange),
+                      foregroundColor: MaterialStateProperty.all(Colors.white),
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: Text('Close'),
                       ),
                     ],
                   ),
