@@ -292,20 +292,19 @@ class _AdminPageState extends State<AdminPage> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  Text(formattedReceiveTime), // Display formatted receive time
+                  Text(formattedReceiveTime),
                   SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       ElevatedButton(
                         onPressed: () {
-                          _resetItemStatus(
-                              itemUid); // Call a function to reset the item status
+                          _resetItemStatus(itemUid);
                           Navigator.of(context).pop();
                         },
                         style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.all(
-                              Colors.white), // Change the button color
+                          backgroundColor:
+                              MaterialStateProperty.all(Colors.white),
                           foregroundColor:
                               MaterialStateProperty.all(Colors.blue),
                         ),
@@ -331,7 +330,10 @@ class _AdminPageState extends State<AdminPage> {
                     height: 10,
                   ),
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      _showCategorySelectionDialog(itemUid, itemName,
+                          itemDescription, imageUrl, itemStatus, receiveTime);
+                    },
                     child: Text('Manage category'),
                     style: ButtonStyle(
                       backgroundColor: MaterialStateProperty.all(Colors.orange),
@@ -455,6 +457,91 @@ class _AdminPageState extends State<AdminPage> {
     } catch (e) {
       // Handle any errors that occur during logout
       print('Error during logout: $e');
+    }
+  }
+
+  void _showCategorySelectionDialog(
+      String itemUid,
+      String itemName,
+      String itemDescription,
+      String imageUrl,
+      String itemStatus,
+      dynamic receiveTime) {
+    String selectedCategory =
+        'book'; // กำหนดหมวดหมู่เริ่มต้น (สามารถเปลี่ยนเป็นค่าเริ่มต้นตามที่ต้องการ)
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Select Category'),
+          content: DropdownButton<String>(
+            value: selectedCategory,
+            onChanged: (String? newValue) {
+              setState(() {
+                selectedCategory = newValue!;
+              });
+            },
+            items: <String>[
+              'book',
+              'cloth',
+              'electrical',
+              'furniture',
+              'sport',
+              'stationery'
+            ].map<DropdownMenuItem<String>>((String value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Text(value),
+              );
+            }).toList(),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _moveItemToCategory(itemUid, selectedCategory);
+                Navigator.of(context).pop();
+              },
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all(Colors.green),
+                foregroundColor: MaterialStateProperty.all(Colors.white),
+              ),
+              child: Text('Move'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _moveItemToCategory(
+      String itemUid, String destinationCategory) async {
+    try {
+      var currentItemRef = _firestore
+          .collection('Items')
+          .doc(selectedDocument)
+          .collection('dataItems')
+          .doc(itemUid);
+      var destinationCategoryRef = _firestore
+          .collection('Items')
+          .doc(destinationCategory)
+          .collection('dataItems')
+          .doc(itemUid);
+
+      var itemData = (await currentItemRef.get()).data();
+      if (itemData != null) {
+        await destinationCategoryRef.set(itemData);
+        await currentItemRef.delete();
+      }
+    } catch (e) {
+      // Handle errors
+      print('Error moving item to category: $e');
     }
   }
 }
