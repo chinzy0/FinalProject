@@ -43,19 +43,6 @@ class _CategoriesPageState extends State<CategoriesPage> {
               );
             },
           ),
-          IconButton(
-            icon: Icon(
-              Icons.history_rounded,
-              color: Colors.white,
-            ), // ไอคอนที่คุณต้องการเพิ่ม
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => UploadHistoryPage(),
-                ),
-              );
-            },
-          ),
         ],
       ),
       backgroundColor: Colors.white,
